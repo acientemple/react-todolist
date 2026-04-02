@@ -1,73 +1,141 @@
-# React + TypeScript + Vite
+# 待办事项 - React TodoList
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一个现代化的待办事项管理应用，支持语音输入、时间解析和企业微信通知。
 
-Currently, two official plugins are available:
+## 功能特性
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **语音输入** - 点击麦克风按钮，通过语音添加任务
+- **智能时间解析** - 支持自然语言设置截止时间
+- **企业微信通知** - 截止时间前自动发送提醒
+- **回收站** - 误删可恢复，永久删除更安全
+- **数据持久化** - localStorage 存储，刷新不丢失
+- **响应式设计** - 支持移动端和桌面端
 
-## React Compiler
+## 安装部署
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. 克隆项目
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/acientemple/react-todolist.git
+cd react-todolist
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. 安装依赖
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+### 3. 配置企业微信通知（可选）
+
+企业微信通知功能需要配置 Webhook：
+
+1. 在企业微信群中添加"群机器人"
+2. 复制 Webhook 地址中的 `key` 值
+3. 创建 `.env` 文件：
+
+```bash
+cp .env.example .env
+```
+
+4. 编辑 `.env` 文件，填入你的 Webhook Key：
+
+```
+WECHAT_WEBHOOK_KEY=你的企业微信机器人webhook密钥
+```
+
+### 4. 启动开发服务器
+
+```bash
+# 启动前端和后端服务
+npm run dev:full
+```
+
+或者分别启动：
+
+```bash
+# 终端1：启动后端通知服务
+npm run server
+
+# 终端2：启动前端开发服务器
+npm run dev
+```
+
+访问 http://localhost:5173
+
+## 使用说明
+
+### 添加任务
+
+- 在输入框中输入任务内容
+- 按 Enter 或点击"添加"按钮
+- 示例："下周一上午10点开会"
+
+### 语音输入
+
+1. 点击输入框右侧的麦克风按钮
+2. 对着麦克风说话
+3. 语音会自动识别并填入输入框
+
+### 时间表达方式
+
+应用支持多种时间表达方式：
+
+| 输入 | 解析结果 |
+|------|----------|
+| 今天 | 今天当前时间 |
+| 明天 | 明天同一时间 |
+| 后天 | 后天同一时间 |
+| 下周三 | 下周三 |
+| 下周星期一 | 下周一 |
+| 下个月5号 | 下月5号 |
+| 4月10号 | 今年4月10号 |
+| 上午9点 | 上午09:00 |
+| 下午3点半 | 下午03:30 |
+
+**注意**：数字和中文数字都支持，如"下周三"和"下星期3"。
+
+### 截止时间通知
+
+1. 开启通知开关
+2. 设置提前提醒时间（默认2小时）
+3. 截止时间到达前会自动发送企业微信通知
+
+### 完成任务
+
+- 点击任务左侧的复选框切换完成状态
+- 已完成任务会显示删除线
+
+### 删除与恢复
+
+- 点击任务右侧的删除按钮移至回收站
+- 底部"回收站"区域可查看已删除任务
+- 可选择"恢复"或"永久删除"
+- 支持一键清空回收站
+
+## 项目结构
+
+```
+react-todolist/
+├── src/
+│   ├── App.tsx      # 主组件和业务逻辑
+│   ├── App.css      # 样式文件
+│   ├── main.tsx     # React 入口
+│   └── index.css    # 全局样式
+├── server.cjs       # Express 通知服务
+├── .env             # 环境变量（不上传）
+├── .env.example     # 环境变量模板
+└── package.json
+```
+
+## 技术栈
+
+- **前端**：React 19 + TypeScript + Vite
+- **后端**：Express.js
+- **样式**：CSS3（CSS 变量）
+- **存储**：localStorage
+- **通知**：企业微信 Webhook
+
+## 许可证
+
+MIT
