@@ -11,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render Service
-        run: curl -s -o /dev/null -w "%{http_code}" https://react-todolist.onrender.com/api/notify || true
+        run: curl -s -o /dev/null -w "%{http_code}" https://react-todolist-rawv.onrender.com/api/notify || true
