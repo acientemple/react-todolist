@@ -661,6 +661,11 @@ function App() {
                       {formatDeadline(todo.deadline).dateStr}
                     </span>
                   )}
+                  {todo.deadline && notifyEnabled && (
+                    <span className="notify-time">
+                      通知: {formatTimeDisplay(new Date(new Date(todo.deadline).getTime() - notifyMinutes * 60000).toISOString())}
+                    </span>
+                  )}
                 </div>
               </label>
               <button

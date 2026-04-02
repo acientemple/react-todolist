@@ -357,6 +357,18 @@ body {
   background: #fef2f2;
 }
 
+.notify-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--primary);
+  padding: 2px 8px;
+  background: #eef2ff;
+  border-radius: 4px;
+  width: fit-content;
+}
+
 .delete-btn {
   width: 32px;
   height: 32px;
