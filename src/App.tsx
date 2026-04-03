@@ -357,6 +357,11 @@ function App() {
   const [userWebhook, setUserWebhook] = useState('')
   const [webhookSaved, setWebhookSaved] = useState(false)
   const [savedWebhook, setSavedWebhook] = useState('') // 保存已设置的 webhook
+  // 修改密码
+  const [showChangePassword, setShowChangePassword] = useState(false)
+  const [oldPassword, setOldPassword] = useState('')
+  const [changeNewPassword, setChangeNewPassword] = useState('')
+  const [changePasswordMsg, setChangePasswordMsg] = useState('')
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
@@ -714,6 +719,18 @@ function App() {
     setTimeout(() => setWebhookSaved(false), 2000)
   }
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!currentUser) return
+    const result = await AuthService.changePassword(currentUser, oldPassword, changeNewPassword)
+    setChangePasswordMsg(result.message)
+    if (result.success) {
+      setOldPassword('')
+      setChangeNewPassword('')
+      setShowChangePassword(false)
+    }
+  }
+
   const loadAllUsers = async () => {
     const users = await FirebaseDB.getAllUsers()
     const userList = Object.values(users) as User[]
@@ -988,6 +1005,47 @@ function App() {
           {voiceResult && !parsedTime && <div className="parsed-time-hint">{voiceResult}</div>}
           <button className="add-btn" onClick={addTodo} disabled={!inputValue.trim()}>添加</button>
         </div>
+
+        {/* 用户设置区域 */}
+        {isLoggedIn && (
+          <div style={{ marginBottom: 16, padding: '12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showChangePassword ? 12 : 0 }}>
+              <span style={{ fontSize: 13, color: 'var(--text-light)' }}>账号设置</span>
+              <button
+                className="test-btn"
+                onClick={() => setShowChangePassword(!showChangePassword)}
+              >
+                {showChangePassword ? '取消' : '修改密码'}
+              </button>
+            </div>
+            {showChangePassword && (
+              <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <input
+                  type="password"
+                  placeholder="原密码"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  style={{ padding: '8px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
+                />
+                <input
+                  type="password"
+                  placeholder="新密码（至少3位）"
+                  value={changeNewPassword}
+                  onChange={(e) => setChangeNewPassword(e.target.value)}
+                  style={{ padding: '8px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
+                />
+                <button type="submit" className="test-btn" style={{ background: 'var(--primary)', color: 'white' }}>
+                  确认修改
+                </button>
+                {changePasswordMsg && (
+                  <span style={{ fontSize: 12, color: changePasswordMsg.includes('成功') ? 'var(--success)' : 'var(--danger)' }}>
+                    {changePasswordMsg}
+                  </span>
+                )}
+              </form>
+            )}
+          </div>
+        )}
 
         <div className="notification-bar">
           <label className="notify-toggle">

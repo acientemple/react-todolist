@@ -221,6 +221,23 @@ export const AuthService = {
     return localStorage.getItem('todo-admin') === 'true';
   },
 
+  // 修改密码
+  async changePassword(username: string, oldPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+    const user = await FirebaseDB.getUser(username);
+    if (!user) {
+      return { success: false, message: '用户不存在' };
+    }
+    if (user.password !== simpleHash(oldPassword)) {
+      return { success: false, message: '原密码错误' };
+    }
+    if (newPassword.length < 3) {
+      return { success: false, message: '新密码至少3位' };
+    }
+    user.password = simpleHash(newPassword);
+    await FirebaseDB.saveUser(username, user);
+    return { success: true, message: '密码修改成功' };
+  },
+
   // 管理员：设置用户为管理员
   async setAdmin(username: string, isAdmin: boolean) {
     const user = await FirebaseDB.getUser(username);
