@@ -642,7 +642,8 @@ function App() {
           await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
             to_name: result.user.username,
             to_email: result.user.email,
-            message: `您的验证码是：${code}，5分钟内有效。`
+            email: result.user.email,
+            reset_code: code
           }, EMAILJS_PUBLIC_KEY)
           setAuthMessage('验证码已发送到您的邮箱')
         } catch (error) {
@@ -791,14 +792,16 @@ function App() {
               </button>
             </div>
             <form className="auth-form-inline" onSubmit={handleAuth}>
-              <input
-                type="text"
-                placeholder="用户名"
-                value={authUsername}
-                onChange={(e) => setAuthUsername(e.target.value)}
-                required
-              />
-              {authMode !== 'forgot' && (
+              {authMode === 'forgot' || authMode === 'verify' ? null : (
+                <input
+                  type="text"
+                  placeholder="用户名"
+                  value={authUsername}
+                  onChange={(e) => setAuthUsername(e.target.value)}
+                  required
+                />
+              )}
+              {authMode === 'login' && (
                 <input
                   type="password"
                   placeholder="密码"
@@ -808,12 +811,21 @@ function App() {
                 />
               )}
               {authMode === 'register' && (
-                <input
-                  type="email"
-                  placeholder="邮箱（选填，用于找回密码）"
-                  value={authEmail}
-                  onChange={(e) => setAuthEmail(e.target.value)}
-                />
+                <>
+                  <input
+                    type="password"
+                    placeholder="密码"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    required
+                  />
+                  <input
+                    type="email"
+                    placeholder="邮箱（选填，用于找回密码）"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                  />
+                </>
               )}
               {authMode === 'forgot' && (
                 <input
