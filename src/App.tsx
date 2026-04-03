@@ -177,12 +177,18 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
   const textWithNum = convertCnNum(remainingText)
   console.log('转换后文本:', textWithNum)
 
-  // 匹配时间：上午9点、下午3点、9点、9点半等
+  // 匹配时间：上午9点、下午3点、9点、9点半、11:05、11点5分等
   const timePatterns = [
-    /(上午|早上|下午|晚上|中午|凌晨)(\d{1,2})点?半?/,
+    /((?:上午|早上|下午|晚上|中午|凌晨)\s*)(\d{1,2})点(?:(\d{1,2})分)?(?:半)?/,  // 上午9点、上午9点30分
+    /(\d{1,2}):(\d{2})/,  // 11:05 格式
+    /(\d{1,2})点(\d{1,2})分/,  // 11点5分 格式
     /(\d{1,2})点半/,
     /(\d{1,2})点/
   ]
+
+  let timeHour = 12
+  let timeMin = 0
+  let matchedTime = false
 
   for (const pattern of timePatterns) {
     const match = textWithNum.match(pattern)
@@ -190,7 +196,40 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
       timePart = match[0]
       remainingText = remainingText.replace(match[0], ' ').replace(/\s+/g, ' ').trim()
       console.log('匹配到时间:', timePart)
-      break
+
+      // 解析小时和分钟
+      if (pattern.source.startsWith('(') && pattern.source.includes(':')) {
+        // 11:05 格式 - match[1] 是小时, match[2] 是分钟
+        timeHour = parseInt(match[1])
+        timeMin = parseInt(match[2])
+        matchedTime = true
+        break
+      } else if (pattern.source.includes('点') && pattern.source.includes('分')) {
+        // 11点5分 格式 - match[1] 是小时, match[2] 是分钟
+        timeHour = parseInt(match[1])
+        timeMin = parseInt(match[2])
+        matchedTime = true
+        break
+      } else if (pattern.source.includes('点半')) {
+        // 9点半 格式
+        timeHour = parseInt(match[1])
+        timeMin = 30
+        matchedTime = true
+        break
+      } else if (match[2]) {
+        // 上午9点 格式
+        timeHour = parseInt(match[2])
+        if (match[3]) {
+          timeMin = parseInt(match[3])
+        }
+        matchedTime = true
+        break
+      } else {
+        // 9点 格式
+        timeHour = parseInt(match[1])
+        matchedTime = true
+        break
+      }
     }
   }
 
@@ -200,31 +239,20 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
   }
 
   // 6. 解析时间
-  if (timePart) {
-    let hour = 12
-    let min = 0
-
-    // 从 timePart 提取数字
-    const numMatch = timePart.match(/(\d{1,2})/)
-    if (numMatch) {
-      hour = parseInt(numMatch[1])
-    }
-    if (timePart.includes('半')) {
-      min = 30
-    }
-
+  if (matchedTime) {
     const isAfternoon = timePart.includes('下午') || timePart.includes('晚上')
     const isMorning = timePart.includes('上午') || timePart.includes('早上') || timePart.includes('中午')
-    console.log('时间解析 - timePart:', timePart, 'hour:', hour, 'isAfternoon:', isAfternoon, 'isMorning:', isMorning)
+    console.log('时间解析 - timePart:', timePart, 'hour:', timeHour, 'min:', timeMin, 'isAfternoon:', isAfternoon, 'isMorning:', isMorning)
 
+    let finalHour = timeHour
     // 调整小时
-    if (isAfternoon && hour < 12) {
-      hour += 12
-    } else if (isMorning && hour < 6) {
-      hour = 8 // 早上6点以前默认为8点
+    if (isAfternoon && finalHour < 12) {
+      finalHour += 12
+    } else if (isMorning && finalHour < 6) {
+      finalHour = 8 // 早上6点以前默认为8点
     }
 
-    targetDate.setHours(hour, min, 0, 0)
+    targetDate.setHours(finalHour, timeMin, 0, 0)
   } else {
     // 没有时间，默认中午12点
     targetDate.setHours(12, 0, 0, 0)
