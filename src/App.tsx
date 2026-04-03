@@ -620,7 +620,7 @@ function App() {
         setAuthMessage(result.message)
       }
     } else if (authMode === 'forgot') {
-      const result = await AuthService.requestPasswordReset(authUsername, authEmail)
+      const result = await AuthService.requestPasswordReset(authUsername)
       setAuthMessage(result.message)
       if (result.success) {
         setAuthMode('login')
@@ -765,10 +765,10 @@ function App() {
               )}
               {authMode === 'forgot' && (
                 <input
-                  type="email"
-                  placeholder="注册时的邮箱"
-                  value={authEmail}
-                  onChange={(e) => setAuthEmail(e.target.value)}
+                  type="text"
+                  placeholder="用户名或邮箱"
+                  value={authUsername}
+                  onChange={(e) => setAuthUsername(e.target.value)}
                   required
                 />
               )}

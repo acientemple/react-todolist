@@ -201,17 +201,29 @@ export const AuthService = {
     await FirebaseDB.deleteUser(username);
   },
 
-  // 申请密码重置
-  async requestPasswordReset(username: string, email: string): Promise<{ success: boolean; message: string }> {
-    const user = await FirebaseDB.getUser(username);
+  // 申请密码重置 - 支持用户名或邮箱
+  async requestPasswordReset(usernameOrEmail: string): Promise<{ success: boolean; message: string }> {
+    // 先尝试作为用户名查找
+    let user = await FirebaseDB.getUser(usernameOrEmail);
+
+    // 如果没找到，尝试作为邮箱查找所有用户
+    if (!user) {
+      const allUsers = await FirebaseDB.getAllUsers();
+      for (const [, u] of Object.entries(allUsers)) {
+        const foundUser = u as User;
+        if (foundUser.email === usernameOrEmail) {
+          user = foundUser;
+          break;
+        }
+      }
+    }
+
     if (!user) {
       return { success: false, message: '用户不存在' };
     }
-    if (user.email !== email) {
-      return { success: false, message: '用户名与邮箱不匹配' };
-    }
-    await FirebaseDB.createResetRequest(username, email);
-    return { success: true, message: '密码重置请求已提交，请联系管理员' };
+
+    await FirebaseDB.createResetRequest(user.username, user.email || '');
+    return { success: true, message: '密码重置请求已提交，管理员会尽快处理' };
   },
 
   // 管理员：重置用户密码
