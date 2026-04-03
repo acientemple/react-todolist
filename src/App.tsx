@@ -626,7 +626,9 @@ function App() {
         // 加载用户的 webhook 设置
         const userData = await FirebaseDB.getUser(authUsername)
         if (userData) {
-          setUserWebhook(userData.wechatWebhook || '')
+          const webhook = userData.wechatWebhook || ''
+          setUserWebhook(webhook)
+          setWebhookSaved(!!webhook)
         }
         setAuthUsername('')
         setAuthPassword('')
@@ -1022,7 +1024,7 @@ function App() {
               <span style={{ fontSize: 13, color: 'var(--text-light)' }}>Webhook:</span>
               {webhookSaved && userWebhook ? (
                 <span style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 13, color: 'var(--success)', background: '#ecfdf5', borderRadius: 6 }}>
-                  已保存 {userWebhook.replace(/https?:\/\/.+\?key=/, '****?key=')}
+                  已保存 ****{userWebhook.split('?key=')[1]}
                 </span>
               ) : (
                 <input
