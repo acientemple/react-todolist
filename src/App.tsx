@@ -26,6 +26,7 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
   let timePart = ''
   let remainingText = cleanText
   let targetDate: Date | null = null
+  let hasExplicitDate = false  // 是否明确指定了日期（如下午3点、明天、星期一等）
 
   // 1. 先匹配具体日期：4月10号、4月10日、10号、10日
   const monthDayMatch = cleanText.match(/(\d{1,2})月(\d{1,2})[号日]/)
@@ -33,6 +34,7 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
     const month = parseInt(monthDayMatch[1])
     const day = parseInt(monthDayMatch[2])
     targetDate = new Date(now.getFullYear(), month - 1, day)
+    hasExplicitDate = true
     remainingText = remainingText.replace(monthDayMatch[0], ' ').replace(/\s+/g, ' ').trim()
     console.log('匹配到日期:', month + '月' + day + '日')
   } else {
@@ -41,6 +43,7 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
     if (simpleDayMatch && !cleanText.includes('月')) {
       const day = parseInt(simpleDayMatch[1])
       targetDate = new Date(now.getFullYear(), now.getMonth(), day)
+      hasExplicitDate = true
       remainingText = remainingText.replace(simpleDayMatch[0], ' ').replace(/\s+/g, ' ').trim()
       console.log('匹配到日期:', day + '日')
     }
@@ -108,6 +111,7 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
     if (daysUntil <= 0) daysUntil += 7
     targetDate = new Date(now)
     targetDate.setDate(targetDate.getDate() + daysUntil)
+    hasExplicitDate = true
     console.log('匹配到星期:', matchedWeekday, 'isNextWeek:', isNextWeek, 'currentDay:', currentDay, 'targetDay:', targetDay, 'daysUntil:', daysUntil, '目标:', targetDate.toLocaleDateString('zh-CN'))
   }
 
@@ -124,6 +128,7 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
     if (dayOffset !== 0 || cleanText.includes('明天') || cleanText.includes('今日') || cleanText.includes('今天')) {
       targetDate = new Date(now)
       targetDate.setDate(targetDate.getDate() + dayOffset)
+      hasExplicitDate = true
       remainingText = remainingText.replace(/明天|明日|后天|今天|今日/g, ' ').replace(/\s+/g, ' ').trim()
       console.log('匹配到相对日期, 偏移:', dayOffset)
     }
@@ -134,6 +139,7 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
     if (cleanText.includes('下周') || cleanText.includes('下星期') || cleanText.includes('下礼拜')) {
       targetDate = new Date(now)
       targetDate.setDate(targetDate.getDate() + 7)
+      hasExplicitDate = true
       remainingText = remainingText.replace(/下周|下星期|下礼拜/g, ' ').replace(/\s+/g, ' ').trim()
       console.log('匹配到下周')
     }
@@ -152,11 +158,13 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
         day = cnNum[dayCn] ?? parseInt(dayCn) ?? 0
       }
       targetDate = new Date(now.getFullYear(), now.getMonth() + 1, day)
+      hasExplicitDate = true
       remainingText = remainingText.replace(nextMonthMatch[0], ' ').replace(/\s+/g, ' ').trim()
       console.log('匹配到下个月:', day + '号')
     } else if (cleanText.includes('下个月') || cleanText.includes('下月')) {
       targetDate = new Date(now)
       targetDate.setMonth(targetDate.getMonth() + 1)
+      hasExplicitDate = true
       remainingText = remainingText.replace(/下个月|下月/g, ' ').replace(/\s+/g, ' ').trim()
       console.log('匹配到下个月')
     }
@@ -265,8 +273,9 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
     targetDate.setHours(12, 0, 0, 0)
   }
 
-  // 如果设定的时间已过，设置到第二天
-  if (targetDate.getTime() < now.getTime()) {
+  // 如果设定的时间已过，且用户明确指定了日期（如下午3点、明天等），设置到第二天
+  // 纯时间（如"3点50"）始终指当天，即使已过也留在当天
+  if (hasExplicitDate && targetDate.getTime() < now.getTime()) {
     targetDate.setDate(targetDate.getDate() + 1)
   }
 
