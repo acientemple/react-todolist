@@ -353,6 +353,9 @@ function App() {
   const [verifyTarget, setVerifyTarget] = useState('') // 要验证的用户名
   const [verifyCode, setVerifyCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  // 用户 webhook 设置
+  const [userWebhook, setUserWebhook] = useState('')
+  const [webhookSaved, setWebhookSaved] = useState(false)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
@@ -474,13 +477,18 @@ function App() {
 
         if (timeDiff > 0 && timeDiff <= notifyWindow) {
           try {
+            const notifyData: any = {
+              text: todo.text,
+              deadline: formatDeadline(todo.deadline).dateStr
+            }
+            // 如果用户设置了 webhook，添加到请求中
+            if (userWebhook) {
+              notifyData.webhook = userWebhook
+            }
             const response = await fetch('https://react-todolist-rawv.onrender.com/api/notify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                text: todo.text,
-                deadline: formatDeadline(todo.deadline).dateStr
-              })
+              body: JSON.stringify(notifyData)
             })
             const result = await response.json()
 
@@ -615,6 +623,11 @@ function App() {
         setIsLoggedIn(true)
         setIsAdmin(result.user?.isAdmin || false)
         setCurrentUser(authUsername)
+        // 加载用户的 webhook 设置
+        const userData = await FirebaseDB.getUser(authUsername)
+        if (userData) {
+          setUserWebhook(userData.wechatWebhook || '')
+        }
         setAuthUsername('')
         setAuthPassword('')
       } else {
@@ -686,6 +699,14 @@ function App() {
     setIsLoggedIn(false)
     setIsAdmin(false)
     setCurrentUser(null)
+    setUserWebhook('')
+  }
+
+  const saveWebhook = async () => {
+    if (!currentUser) return
+    await FirebaseDB.updateUserWebhook(currentUser, userWebhook)
+    setWebhookSaved(true)
+    setTimeout(() => setWebhookSaved(false), 2000)
   }
 
   const loadAllUsers = async () => {
@@ -993,6 +1014,32 @@ function App() {
           <button className="test-btn" onClick={testNotification}>测试</button>
           {notifyStatus && <span className="notify-status">{notifyStatus}</span>}
         </div>
+
+        {/* 企业微信 Webhook 设置 */}
+        {isLoggedIn && (
+          <div className="webhook-section" style={{ marginBottom: 16, padding: '12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 13, color: 'var(--text-light)' }}>Webhook:</span>
+              <input
+                type="text"
+                placeholder="输入企业微信群机器人的 webhook URL"
+                value={userWebhook}
+                onChange={(e) => setUserWebhook(e.target.value)}
+                style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
+              />
+              <button
+                className="test-btn"
+                onClick={saveWebhook}
+                style={{ background: webhookSaved ? 'var(--success)' : undefined, color: webhookSaved ? 'white' : undefined }}
+              >
+                {webhookSaved ? '已保存' : '保存'}
+              </button>
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 6 }}>
+              保存后将使用您自己的企业微信机器人接收通知
+            </div>
+          </div>
+        )}
 
         <ul className="todo-list">
           {todos

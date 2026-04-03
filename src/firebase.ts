@@ -32,6 +32,7 @@ export interface User {
   email: string;
   isAdmin: boolean;
   created: string;
+  wechatWebhook?: string; // 用户的企业微信 webhook URL
 }
 
 // 密码重置请求接口
@@ -76,6 +77,15 @@ export const FirebaseDB = {
   // 删除用户
   async deleteUser(username: string) {
     await remove(ref(database, TODO_PATH + 'users/' + username));
+  },
+
+  // 更新用户的 webhook URL
+  async updateUserWebhook(username: string, webhook: string) {
+    const user = await this.getUser(username);
+    if (user) {
+      user.wechatWebhook = webhook;
+      await this.saveUser(username, user);
+    }
   },
 
   // 批量保存用户（管理员用）

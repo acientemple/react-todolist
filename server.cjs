@@ -9,10 +9,29 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
-const WECHAT_WEBHOOK_URL = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=' + process.env.WECHAT_WEBHOOK_KEY;
+const DEFAULT_WEBHOOK_KEY = process.env.WECHAT_WEBHOOK_KEY;
 
 app.post('/api/notify', (req, res) => {
-  const { text, deadline } = req.body;
+  const { text, deadline, webhook } = req.body;
+
+  // 如果用户提供了 webhook，使用用户的；否则使用默认的
+  let webhookKey = DEFAULT_WEBHOOK_KEY;
+  if (webhook) {
+    // 从用户 webhook URL 中提取 key
+    try {
+      const url = new URL(webhook);
+      webhookKey = url.searchParams.get('key') || DEFAULT_WEBHOOK_KEY;
+    } catch {
+      // 无效的 URL，使用默认
+    }
+  }
+
+  if (!webhookKey) {
+    res.status(400).json({ success: false, message: '未配置企业微信 webhook' });
+    return;
+  }
+
+  const wechatWebhookUrl = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=' + webhookKey;
 
   const message = {
     msgtype: 'text',
@@ -21,7 +40,7 @@ app.post('/api/notify', (req, res) => {
     }
   };
 
-  const url = new URL(WECHAT_WEBHOOK_URL);
+  const url = new URL(wechatWebhookUrl);
   const options = {
     hostname: url.hostname,
     port: 443,
