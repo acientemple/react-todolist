@@ -286,12 +286,15 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(AuthService.isLoggedIn())
   const [isAdmin, setIsAdmin] = useState(AuthService.isAdmin())
   const [currentUser, setCurrentUser] = useState(AuthService.getCurrentUser())
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
+  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [authUsername, setAuthUsername] = useState('')
   const [authPassword, setAuthPassword] = useState('')
+  const [authEmail, setAuthEmail] = useState('')
   const [authMessage, setAuthMessage] = useState('')
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [allUsers, setAllUsers] = useState<User[]>([])
+  const [resetRequests, setResetRequests] = useState<any[]>([])
+  const [resetPasswordInput, setResetPasswordInput] = useState('')
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
@@ -559,13 +562,20 @@ function App() {
       } else {
         setAuthMessage(result.message)
       }
-    } else {
-      const result = await AuthService.register(authUsername, authPassword)
+    } else if (authMode === 'register') {
+      const result = await AuthService.register(authUsername, authPassword, authEmail)
       if (result.success) {
         setAuthMessage('注册成功，请登录')
         setAuthMode('login')
+        setAuthEmail('')
       } else {
         setAuthMessage(result.message)
+      }
+    } else if (authMode === 'forgot') {
+      const result = await AuthService.requestPasswordReset(authUsername, authEmail)
+      setAuthMessage(result.message)
+      if (result.success) {
+        setAuthMode('login')
       }
     }
   }
@@ -593,6 +603,22 @@ function App() {
       await AuthService.deleteUser(username)
       loadAllUsers()
     }
+  }
+
+  const loadResetRequests = async () => {
+    const requests = await FirebaseDB.getResetRequests()
+    setResetRequests(requests)
+  }
+
+  const handleResetPassword = async (request: any) => {
+    if (!resetPasswordInput || resetPasswordInput.length < 3) {
+      alert('密码至少3位')
+      return
+    }
+    await AuthService.adminResetPassword(request.username, resetPasswordInput)
+    await FirebaseDB.completeResetRequest(request.id)
+    setResetPasswordInput('')
+    loadResetRequests()
   }
 
   const toggleVoice = () => {
@@ -647,7 +673,7 @@ function App() {
             <div className="auth-tabs">
               <button
                 className={authMode === 'login' ? 'active' : ''}
-                onClick={() => { setAuthMode('login'); setAuthMessage(''); }}
+                onClick={() => { setAuthMode('login'); setAuthMessage(''); setAuthEmail(''); }}
               >
                 登录
               </button>
@@ -656,6 +682,12 @@ function App() {
                 onClick={() => { setAuthMode('register'); setAuthMessage(''); }}
               >
                 注册
+              </button>
+              <button
+                className={authMode === 'forgot' ? 'active' : ''}
+                onClick={() => { setAuthMode('forgot'); setAuthMessage(''); }}
+              >
+                忘记密码
               </button>
             </div>
             <form className="auth-form-inline" onSubmit={handleAuth}>
@@ -666,16 +698,35 @@ function App() {
                 onChange={(e) => setAuthUsername(e.target.value)}
                 required
               />
-              <input
-                type="password"
-                placeholder="密码"
-                value={authPassword}
-                onChange={(e) => setAuthPassword(e.target.value)}
-                required
-              />
+              {authMode !== 'forgot' && (
+                <input
+                  type="password"
+                  placeholder="密码"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  required
+                />
+              )}
+              {authMode === 'register' && (
+                <input
+                  type="email"
+                  placeholder="邮箱（选填，用于找回密码）"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                />
+              )}
+              {authMode === 'forgot' && (
+                <input
+                  type="email"
+                  placeholder="注册时的邮箱"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  required
+                />
+              )}
               {authMessage && <p className="auth-message">{authMessage}</p>}
               <button type="submit" className="auth-submit">
-                {authMode === 'login' ? '登录' : '注册'}
+                {authMode === 'login' ? '登录' : authMode === 'register' ? '注册' : '提交申请'}
               </button>
             </form>
           </div>
@@ -688,10 +739,13 @@ function App() {
             <ul className="user-list">
               {allUsers.map(user => (
                 <li key={user.username} className="user-item">
-                  <span className="user-name">
-                    {user.username}
-                    {user.isAdmin && <span className="admin-badge">管理员</span>}
-                  </span>
+                  <div className="user-info">
+                    <span className="user-name">
+                      {user.username}
+                      {user.isAdmin && <span className="admin-badge">管理员</span>}
+                    </span>
+                    {user.email && <span className="user-email">{user.email}</span>}
+                  </div>
                   <span className="user-date">{new Date(user.created).toLocaleDateString('zh-CN')}</span>
                   <div className="user-actions">
                     <button onClick={() => toggleAdmin(user.username, user.isAdmin)}>
@@ -701,6 +755,33 @@ function App() {
                   </div>
                 </li>
               ))}
+            </ul>
+
+            <h3 style={{marginTop: '24px'}}>密码重置请求</h3>
+            <button className="load-requests-btn" onClick={loadResetRequests}>刷新请求</button>
+            <ul className="user-list">
+              {resetRequests.map(request => (
+                <li key={request.id} className="user-item reset-request">
+                  <div className="user-info">
+                    <span className="user-name">{request.username}</span>
+                    <span className="user-email">{request.email}</span>
+                  </div>
+                  <span className="user-date">{new Date(request.requestedAt).toLocaleString('zh-CN')}</span>
+                  <div className="reset-actions">
+                    <input
+                      type="password"
+                      placeholder="新密码"
+                      value={resetPasswordInput}
+                      onChange={(e) => setResetPasswordInput(e.target.value)}
+                      style={{padding: '6px', border: '1px solid var(--border)', borderRadius: '4px', width: '80px'}}
+                    />
+                    <button onClick={() => handleResetPassword(request)}>重置密码</button>
+                  </div>
+                </li>
+              ))}
+              {resetRequests.length === 0 && (
+                <li className="user-item">暂无重置请求</li>
+              )}
             </ul>
           </div>
         )}

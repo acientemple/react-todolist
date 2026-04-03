@@ -292,6 +292,69 @@ body {
   border-color: var(--danger);
 }
 
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-email {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+.load-requests-btn {
+  margin-bottom: 12px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.load-requests-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.reset-request {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reset-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.reset-actions input {
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.reset-actions button {
+  padding: 6px 12px;
+  background: var(--warning);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.reset-actions button:hover {
+  background: #d97706;
+}
+
 .input-section {
   display: flex;
   flex-direction: column;

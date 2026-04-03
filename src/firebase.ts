@@ -29,8 +29,17 @@ export const simpleHash = (str: string): string => {
 export interface User {
   username: string;
   password: string;
+  email: string;
   isAdmin: boolean;
   created: string;
+}
+
+// 密码重置请求接口
+export interface ResetRequest {
+  username: string;
+  email: string;
+  requestedAt: string;
+  status: 'pending' | 'completed';
 }
 
 // Firebase 数据库操作 - todolist 专用
@@ -74,13 +83,49 @@ export const FirebaseDB = {
     for (const [key, value] of Object.entries(users)) {
       await set(ref(database, TODO_PATH + 'users/' + key), value);
     }
+  },
+
+  // 创建密码重置请求
+  async createResetRequest(username: string, email: string) {
+    const request: ResetRequest = {
+      username,
+      email,
+      requestedAt: new Date().toISOString(),
+      status: 'pending'
+    };
+    await push(ref(database, TODO_PATH + 'resetRequests'), request);
+  },
+
+  // 获取所有密码重置请求
+  async getResetRequests() {
+    const snapshot = await get(ref(database, TODO_PATH + 'resetRequests'));
+    const data = snapshot.val() || {};
+    const requests: (ResetRequest & { id: string })[] = [];
+    for (const [id, value] of Object.entries(data)) {
+      requests.push({ ...(value as ResetRequest), id });
+    }
+    return requests.filter(r => r.status === 'pending');
+  },
+
+  // 完成密码重置请求
+  async completeResetRequest(requestId: string) {
+    await set(ref(database, TODO_PATH + 'resetRequests/' + requestId + '/status'), 'completed');
+  },
+
+  // 重置用户密码
+  async resetPassword(username: string, newPassword: string) {
+    const user = await this.getUser(username);
+    if (user) {
+      user.password = simpleHash(newPassword);
+      await this.saveUser(username, user);
+    }
   }
 };
 
 // 认证服务
 export const AuthService = {
   // 注册
-  async register(username: string, password: string, isAdmin: boolean = false): Promise<{ success: boolean; message: string }> {
+  async register(username: string, password: string, email: string = '', isAdmin: boolean = false): Promise<{ success: boolean; message: string }> {
     if (!username || !password) {
       return { success: false, message: '用户名和密码不能为空' };
     }
@@ -94,6 +139,7 @@ export const AuthService = {
     const user: User = {
       username,
       password: simpleHash(password),
+      email,
       isAdmin,
       created: new Date().toISOString()
     };
@@ -153,6 +199,28 @@ export const AuthService = {
   // 管理员：删除用户
   async deleteUser(username: string) {
     await FirebaseDB.deleteUser(username);
+  },
+
+  // 申请密码重置
+  async requestPasswordReset(username: string, email: string): Promise<{ success: boolean; message: string }> {
+    const user = await FirebaseDB.getUser(username);
+    if (!user) {
+      return { success: false, message: '用户不存在' };
+    }
+    if (user.email !== email) {
+      return { success: false, message: '用户名与邮箱不匹配' };
+    }
+    await FirebaseDB.createResetRequest(username, email);
+    return { success: true, message: '密码重置请求已提交，请联系管理员' };
+  },
+
+  // 管理员：重置用户密码
+  async adminResetPassword(username: string, newPassword: string) {
+    if (newPassword.length < 3) {
+      return { success: false, message: '密码至少3位' };
+    }
+    await FirebaseDB.resetPassword(username, newPassword);
+    return { success: true, message: '密码重置成功' };
   }
 };
 
