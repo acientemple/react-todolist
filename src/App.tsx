@@ -4,9 +4,9 @@ import type { User } from './firebase'
 import emailjs from '@emailjs/browser'
 
 // EmailJS 配置
-const EMAILJS_SERVICE_ID = 'service_8fpi2se'
-const EMAILJS_TEMPLATE_ID = 'template_7dIlJkJ'
-const EMAILJS_PUBLIC_KEY = 'user_xxxxxxxxxx' // TODO: 替换为实际公钥
+const EMAILJS_SERVICE_ID = 'service_mm0l2m5'
+const EMAILJS_TEMPLATE_ID = 'template_vmv2xvo'
+const EMAILJS_PUBLIC_KEY = 'LsNvV4SDNGLYE7PuD'
 
 interface Todo {
   id: number
