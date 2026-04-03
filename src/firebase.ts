@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set, get, push, remove, onValue, off } from 'firebase/database';
 
-// Firebase 配置 - 使用 snake-game 的配置
+// Firebase 配置
 const firebaseConfig = {
   projectId: 'snake-game-6e39e',
   databaseURL: 'https://snake-game-6e39e-default-rtdb.asia-southeast1.firebasedatabase.app/'
@@ -10,6 +10,9 @@ const firebaseConfig = {
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+
+// 数据路径前缀 - todolist 专用
+const TODO_PATH = 'todolist/';
 
 // 简单哈希函数
 export const simpleHash = (str: string): string => {
@@ -30,28 +33,28 @@ export interface User {
   created: string;
 }
 
-// Firebase 数据库操作
+// Firebase 数据库操作 - todolist 专用
 export const FirebaseDB = {
   // 获取所有数据
   async getAll() {
-    const snapshot = await get(ref(database, '/'));
+    const snapshot = await get(ref(database, TODO_PATH));
     return snapshot.val() || { users: {} };
   },
 
   // 保存用户
   async saveUser(username: string, userData: User) {
-    await set(ref(database, 'users/' + username), userData);
+    await set(ref(database, TODO_PATH + 'users/' + username), userData);
   },
 
   // 读取用户
   async getUser(username: string) {
-    const snapshot = await get(ref(database, 'users/' + username));
+    const snapshot = await get(ref(database, TODO_PATH + 'users/' + username));
     return snapshot.val();
   },
 
   // 读取所有用户
   async getAllUsers() {
-    const snapshot = await get(ref(database, 'users'));
+    const snapshot = await get(ref(database, TODO_PATH + 'users'));
     return snapshot.val() || {};
   },
 
@@ -63,13 +66,13 @@ export const FirebaseDB = {
 
   // 删除用户
   async deleteUser(username: string) {
-    await remove(ref(database, 'users/' + username));
+    await remove(ref(database, TODO_PATH + 'users/' + username));
   },
 
   // 批量保存用户（管理员用）
   async batchSaveUsers(users: Record<string, User>) {
     for (const [key, value] of Object.entries(users)) {
-      await set(ref(database, 'users/' + key), value);
+      await set(ref(database, TODO_PATH + 'users/' + key), value);
     }
   }
 };
