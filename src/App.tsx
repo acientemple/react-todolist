@@ -663,7 +663,7 @@ function App() {
                   )}
                   {todo.deadline && notifyEnabled && (
                     <span className="notify-time">
-                      通知: {formatTimeDisplay(new Date(new Date(todo.deadline).getTime() - notifyMinutes * 60000).toISOString())}
+                      （通知时间: {formatTimeDisplay(new Date(new Date(todo.deadline).getTime() - notifyMinutes * 60000).toISOString())}）
                     </span>
                   )}
                 </div>
