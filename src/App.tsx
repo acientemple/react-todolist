@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { AuthService, FirebaseDB } from './firebase'
 import type { User } from './firebase'
+import emailjs from '@emailjs/browser'
+
+// EmailJS 配置
+const EMAILJS_SERVICE_ID = 'service_8fpi2se'
+const EMAILJS_TEMPLATE_ID = 'template_7dIlJkJ'
+const EMAILJS_PUBLIC_KEY = 'user_xxxxxxxxxx' // TODO: 替换为实际公钥
 
 interface Todo {
   id: number
@@ -334,7 +340,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(AuthService.isLoggedIn())
   const [isAdmin, setIsAdmin] = useState(AuthService.isAdmin())
   const [currentUser, setCurrentUser] = useState(AuthService.getCurrentUser())
-  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot'>('login')
+  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot' | 'verify'>('login')
   const [authUsername, setAuthUsername] = useState('')
   const [authPassword, setAuthPassword] = useState('')
   const [authEmail, setAuthEmail] = useState('')
@@ -343,6 +349,10 @@ function App() {
   const [allUsers, setAllUsers] = useState<User[]>([])
   const [resetRequests, setResetRequests] = useState<any[]>([])
   const [resetPasswordInput, setResetPasswordInput] = useState('')
+  // 验证码相关
+  const [verifyTarget, setVerifyTarget] = useState('') // 要验证的用户名
+  const [verifyCode, setVerifyCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
@@ -620,11 +630,53 @@ function App() {
         setAuthMessage(result.message)
       }
     } else if (authMode === 'forgot') {
+      // 发送验证码
       const result = await AuthService.requestPasswordReset(authUsername)
       setAuthMessage(result.message)
-      if (result.success) {
-        setAuthMode('login')
+      if (result.success && result.user) {
+        // 发送邮件
+        const code = Math.floor(100000 + Math.random() * 900000).toString()
+        await FirebaseDB.saveVerificationCode(result.user.username, code)
+
+        try {
+          await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+            to_name: result.user.username,
+            to_email: result.user.email,
+            message: `您的验证码是：${code}，5分钟内有效。`
+          }, EMAILJS_PUBLIC_KEY)
+          setAuthMessage('验证码已发送到您的邮箱')
+        } catch (error) {
+          console.error('EmailJS error:', error)
+          setAuthMessage('邮件发送失败，请稍后重试')
+          return
+        }
+
+        setVerifyTarget(result.user.username)
+        setAuthUsername('')
+        setAuthMode('verify')
       }
+    } else if (authMode === 'verify') {
+      // 验证验证码并重置密码
+      if (!verifyCode || verifyCode.length !== 6) {
+        setAuthMessage('请输入6位验证码')
+        return
+      }
+      if (!newPassword || newPassword.length < 3) {
+        setAuthMessage('新密码至少3位')
+        return
+      }
+      const isValid = await FirebaseDB.verifyCode(verifyTarget, verifyCode)
+      if (!isValid) {
+        setAuthMessage('验证码错误或已过期')
+        return
+      }
+      await AuthService.adminResetPassword(verifyTarget, newPassword)
+      await FirebaseDB.deleteVerificationCode(verifyTarget)
+      setAuthMessage('密码重置成功，请登录')
+      setVerifyTarget('')
+      setVerifyCode('')
+      setNewPassword('')
+      setAuthMode('login')
     }
   }
 
@@ -772,9 +824,28 @@ function App() {
                   required
                 />
               )}
+              {authMode === 'verify' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="6位验证码"
+                    value={verifyCode}
+                    onChange={(e) => setVerifyCode(e.target.value)}
+                    maxLength={6}
+                    required
+                  />
+                  <input
+                    type="password"
+                    placeholder="新密码（至少3位）"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                  />
+                </>
+              )}
               {authMessage && <p className="auth-message">{authMessage}</p>}
               <button type="submit" className="auth-submit">
-                {authMode === 'login' ? '登录' : authMode === 'register' ? '注册' : '提交申请'}
+                {authMode === 'login' ? '登录' : authMode === 'register' ? '注册' : authMode === 'forgot' ? '发送验证码' : '重置密码'}
               </button>
             </form>
           </div>

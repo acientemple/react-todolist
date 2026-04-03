@@ -119,6 +119,30 @@ export const FirebaseDB = {
       user.password = simpleHash(newPassword);
       await this.saveUser(username, user);
     }
+  },
+
+  // 保存验证码（5分钟有效期）
+  async saveVerificationCode(username: string, code: string) {
+    const expiry = Date.now() + 5 * 60 * 1000; // 5分钟后过期
+    await set(ref(database, TODO_PATH + 'verifyCodes/' + username), {
+      code,
+      expiry,
+      createdAt: new Date().toISOString()
+    });
+  },
+
+  // 验证验证码
+  async verifyCode(username: string, code: string): Promise<boolean> {
+    const snapshot = await get(ref(database, TODO_PATH + 'verifyCodes/' + username));
+    const data = snapshot.val();
+    if (!data || data.code !== code) return false;
+    if (Date.now() > data.expiry) return false;
+    return true;
+  },
+
+  // 删除验证码
+  async deleteVerificationCode(username: string) {
+    await remove(ref(database, TODO_PATH + 'verifyCodes/' + username));
   }
 };
 
@@ -201,8 +225,8 @@ export const AuthService = {
     await FirebaseDB.deleteUser(username);
   },
 
-  // 申请密码重置 - 支持用户名或邮箱
-  async requestPasswordReset(usernameOrEmail: string): Promise<{ success: boolean; message: string }> {
+  // 查找用户 - 支持用户名或邮箱
+  async findUser(usernameOrEmail: string): Promise<User | null> {
     // 先尝试作为用户名查找
     let user = await FirebaseDB.getUser(usernameOrEmail);
 
@@ -218,12 +242,22 @@ export const AuthService = {
       }
     }
 
+    return user;
+  },
+
+  // 申请密码重置 - 支持用户名或邮箱
+  async requestPasswordReset(usernameOrEmail: string): Promise<{ success: boolean; message: string; user?: User }> {
+    const user = await this.findUser(usernameOrEmail);
+
     if (!user) {
       return { success: false, message: '用户不存在' };
     }
 
-    await FirebaseDB.createResetRequest(user.username, user.email || '');
-    return { success: true, message: '密码重置请求已提交，管理员会尽快处理' };
+    if (!user.email) {
+      return { success: false, message: '该用户未绑定邮箱' };
+    }
+
+    return { success: true, message: '验证码已发送', user };
   },
 
   // 管理员：重置用户密码
