@@ -356,6 +356,7 @@ function App() {
   // 用户 webhook 设置
   const [userWebhook, setUserWebhook] = useState('')
   const [webhookSaved, setWebhookSaved] = useState(false)
+  const [savedWebhook, setSavedWebhook] = useState('') // 保存已设置的 webhook
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
@@ -626,9 +627,9 @@ function App() {
         // 加载用户的 webhook 设置
         const userData = await FirebaseDB.getUser(authUsername)
         if (userData) {
-          const webhook = userData.wechatWebhook || ''
-          setUserWebhook(webhook)
-          setWebhookSaved(!!webhook)
+          setUserWebhook('')
+          setWebhookSaved(!!userData.wechatWebhook)
+          setSavedWebhook(userData.wechatWebhook || '')
         }
         setAuthUsername('')
         setAuthPassword('')
@@ -705,9 +706,11 @@ function App() {
   }
 
   const saveWebhook = async () => {
-    if (!currentUser) return
-    await FirebaseDB.updateUserWebhook(currentUser, userWebhook)
+    if (!currentUser || !userWebhook.trim()) return
+    await FirebaseDB.updateUserWebhook(currentUser, userWebhook.trim())
     setWebhookSaved(true)
+    setSavedWebhook(userWebhook.trim())
+    setUserWebhook('') // 清空输入框
     setTimeout(() => setWebhookSaved(false), 2000)
   }
 
@@ -1022,9 +1025,9 @@ function App() {
           <div className="webhook-section" style={{ marginBottom: 16, padding: '12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 13, color: 'var(--text-light)' }}>Webhook:</span>
-              {webhookSaved && userWebhook ? (
+              {webhookSaved ? (
                 <span style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 13, color: 'var(--success)', background: '#ecfdf5', borderRadius: 6 }}>
-                  已保存 ****{userWebhook.split('?key=')[1]}
+                  已保存
                 </span>
               ) : (
                 <input
@@ -1039,7 +1042,7 @@ function App() {
                 className="test-btn"
                 onClick={() => {
                   if (webhookSaved) {
-                    setUserWebhook('')
+                    setUserWebhook(savedWebhook)
                     setWebhookSaved(false)
                   } else {
                     saveWebhook()
