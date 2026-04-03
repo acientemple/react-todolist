@@ -6,23 +6,36 @@
 
 :root {
   --primary: #6366f1;
+  --primary-light: #818cf8;
   --primary-dark: #4f46e5;
   --success: #10b981;
+  --success-light: #d1fae5;
   --danger: #ef4444;
+  --danger-light: #fee2e2;
   --warning: #f59e0b;
+  --warning-light: #fef3c7;
   --bg: #f8fafc;
   --card: #ffffff;
   --text: #1f2937;
   --text-light: #6b7280;
+  --text-lighter: #9ca3af;
   --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
 }
 
 body {
-  font-family: "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: var(--bg);
+  font-family: "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 50%, #ecfdf5 100%);
   color: var(--text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
 }
 
 .app {
@@ -34,40 +47,44 @@ body {
 
 .container {
   width: 100%;
-  max-width: 560px;
+  max-width: 540px;
   background: var(--card);
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
+/* Header */
 .header {
   margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .header-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .header h1 {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 6px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .subtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-light);
+  margin-top: 4px;
 }
 
 .auth-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .user-info {
@@ -79,29 +96,33 @@ body {
   display: inline-block;
   font-size: 10px;
   padding: 2px 6px;
-  background: var(--danger);
+  background: linear-gradient(135deg, var(--danger), #dc2626);
   color: white;
   border-radius: 4px;
   margin-left: 6px;
+  font-weight: 500;
 }
 
 .login-btn, .logout-btn, .admin-btn {
   padding: 8px 16px;
   font-size: 13px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-family: inherit;
+  font-weight: 500;
 }
 
 .login-btn {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
   border: none;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .login-btn:hover {
-  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 .logout-btn {
@@ -113,58 +134,37 @@ body {
 .logout-btn:hover {
   color: var(--danger);
   border-color: var(--danger);
+  background: var(--danger-light);
 }
 
 .admin-btn {
-  background: var(--warning);
+  background: linear-gradient(135deg, var(--warning), #d97706);
   color: white;
   border: none;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
 }
 
 .admin-btn:hover {
-  background: #d97706;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
-/* 登录/注册表单 - 页面内 */
-
-.auth-form button[type="submit"] {
-  width: 100%;
-  padding: 12px;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.auth-form button[type="submit"]:hover {
-  background: var(--primary-dark);
-}
-
-.auth-message {
-  color: var(--danger);
-  font-size: 13px;
-  text-align: center;
-  margin-bottom: 12px;
-}
-
-/* 页面内登录/注册表单 */
+/* 登录/注册表单 */
 .auth-section-page {
-  background: var(--bg);
-  border-radius: 12px;
-  padding: 20px;
+  background: linear-gradient(135deg, var(--bg), #fff);
+  border-radius: var(--radius);
+  padding: 24px;
   margin-bottom: 20px;
   border: 1px solid var(--border);
 }
 
 .auth-tabs {
   display: flex;
-  gap: 0;
-  margin-bottom: 16px;
-  border-bottom: 2px solid var(--border);
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--border-light);
+  padding: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .auth-tabs button {
@@ -172,14 +172,13 @@ body {
   padding: 10px 16px;
   background: transparent;
   border: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-light);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
   font-family: inherit;
-  transition: all 0.2s;
 }
 
 .auth-tabs button:hover {
@@ -187,58 +186,75 @@ body {
 }
 
 .auth-tabs button.active {
+  background: var(--card);
   color: var(--primary);
-  border-bottom-color: var(--primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .auth-form-inline {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .auth-form-inline input {
   padding: 12px 16px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-family: inherit;
+  transition: all 0.2s ease;
+  background: var(--card);
 }
 
 .auth-form-inline input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .auth-submit {
   padding: 12px;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .auth-submit:hover {
-  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.auth-message {
+  color: var(--danger);
+  font-size: 13px;
+  text-align: center;
+  padding: 10px;
+  background: var(--danger-light);
+  border-radius: var(--radius-sm);
 }
 
 /* 管理员面板 */
 .admin-panel {
-  background: var(--bg);
-  border-radius: 12px;
+  background: linear-gradient(135deg, var(--bg), #fff);
+  border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 20px;
   border: 1px solid var(--border);
 }
 
 .admin-panel h3 {
-  font-size: 16px;
+  font-size: 15px;
   margin-bottom: 16px;
   color: var(--text);
+  font-weight: 600;
 }
 
 .user-list {
@@ -249,20 +265,27 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  background: white;
-  border-radius: 8px;
+  padding: 14px;
+  background: var(--card);
+  border-radius: var(--radius-sm);
   margin-bottom: 8px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+}
+
+.user-item:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
 }
 
 .user-item .user-name {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .user-item .user-date {
   font-size: 12px;
-  color: var(--text-light);
+  color: var(--text-lighter);
 }
 
 .user-actions {
@@ -273,12 +296,13 @@ body {
 .user-actions button {
   padding: 6px 12px;
   font-size: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-family: inherit;
   background: var(--bg);
   border: 1px solid var(--border);
   color: var(--text);
+  transition: all 0.2s ease;
 }
 
 .user-actions button:hover {
@@ -308,21 +332,18 @@ body {
   padding: 8px 16px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-family: inherit;
   font-size: 13px;
+  color: var(--text);
+  transition: all 0.2s ease;
 }
 
 .load-requests-btn:hover {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
-}
-
-.reset-request {
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 .reset-actions {
@@ -334,42 +355,50 @@ body {
 }
 
 .reset-actions input {
-  padding: 6px;
+  padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
+  flex: 1;
 }
 
 .reset-actions button {
-  padding: 6px 12px;
-  background: var(--warning);
+  padding: 8px 14px;
+  background: linear-gradient(135deg, var(--warning), #d97706);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 12px;
   font-family: inherit;
+  transition: all 0.2s ease;
 }
 
 .reset-actions button:hover {
-  background: #d97706;
+  transform: translateY(-1px);
 }
 
+/* 输入区域 */
 .input-section {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
+  padding: 20px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
 }
 
 .parsed-time-hint {
   font-size: 13px;
   color: var(--success);
-  padding: 6px 12px;
-  background: #ecfdf5;
-  border-radius: 6px;
+  padding: 8px 14px;
+  background: var(--success-light);
+  border-radius: var(--radius-sm);
   width: fit-content;
   font-weight: 500;
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .input-row {
@@ -388,20 +417,21 @@ body {
   flex: 1;
   padding: 14px 52px 14px 16px;
   font-size: 15px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
   outline: none;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-family: inherit;
+  background: var(--card);
 }
 
 .todo-input:focus {
-  border-color: var(--primary);
+  border-color: var(--primary-light);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .todo-input::placeholder {
-  color: #9ca3af;
+  color: var(--text-lighter);
 }
 
 .interim-text {
@@ -424,15 +454,15 @@ body {
   right: 6px;
   top: 50%;
   transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   padding: 8px;
-  background: var(--bg);
-  border: 2px solid var(--border);
+  background: var(--card);
+  border: 1.5px solid var(--border);
   border-radius: 50%;
   cursor: pointer;
   color: var(--text-light);
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -446,55 +476,58 @@ body {
 }
 
 .voice-btn.recording {
-  background: var(--danger);
+  background: linear-gradient(135deg, var(--danger), #dc2626);
   border-color: var(--danger);
   color: #fff;
   animation: voicePulse 1.2s ease-in-out infinite;
 }
 
 .voice-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 
 @keyframes voicePulse {
   0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
   100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
 .deadline-input {
-  padding: 14px 16px;
+  padding: 12px 14px;
   font-size: 14px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
   outline: none;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-family: inherit;
   color: var(--text);
-  min-width: 200px;
+  min-width: 180px;
+  background: var(--card);
 }
 
 .deadline-input:focus {
-  border-color: var(--primary);
+  border-color: var(--primary-light);
 }
 
 .add-btn {
   padding: 14px 28px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #fff;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-family: inherit;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .add-btn:hover:not(:disabled) {
-  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 .add-btn:active:not(:disabled) {
@@ -502,45 +535,50 @@ body {
 }
 
 .add-btn:disabled {
-  background: #d1d5db;
+  background: var(--border);
   cursor: not-allowed;
+  box-shadow: none;
 }
 
+/* 通知栏 */
 .notification-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  background: var(--bg);
-  border-radius: 8px;
-  margin-bottom: 20px;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--bg), #fff);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
   font-size: 13px;
   flex-wrap: wrap;
+  border: 1px solid var(--border-light);
 }
 
 .notify-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
-  flex: 1;
+  color: var(--text);
 }
 
 .notify-toggle input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   accent-color: var(--primary);
   cursor: pointer;
+  border-radius: 4px;
 }
 
 .notify-time-input {
-  width: 48px;
-  padding: 4px 6px;
+  width: 50px;
+  padding: 6px 8px;
   font-size: 13px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   text-align: center;
   font-family: inherit;
+  background: var(--card);
 }
 
 .notify-time-input:focus {
@@ -549,15 +587,16 @@ body {
 }
 
 .test-btn {
-  padding: 6px 12px;
+  padding: 6px 14px;
   font-size: 12px;
   color: var(--primary);
   background: transparent;
   border: 1px solid var(--primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-family: inherit;
+  font-weight: 500;
 }
 
 .test-btn:hover {
@@ -569,8 +608,34 @@ body {
   font-size: 12px;
   color: var(--success);
   white-space: nowrap;
+  padding: 4px 10px;
+  background: var(--success-light);
+  border-radius: var(--radius-sm);
 }
 
+/* 用户设置区域 */
+.user-settings {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--bg), #fff);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.settings-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* 任务列表 */
 .todo-list {
   list-style: none;
   display: flex;
@@ -583,11 +648,16 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: var(--bg);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  transition: all 0.2s;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
   animation: slideIn 0.3s ease;
+}
+
+.todo-item:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
 }
 
 @keyframes slideIn {
@@ -598,48 +668,52 @@ body {
 .todo-label {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
   flex: 1;
   min-width: 0;
 }
 
 .todo-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   accent-color: var(--primary);
   cursor: pointer;
   flex-shrink: 0;
+  border-radius: 4px;
 }
 
 .todo-content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
+  flex: 1;
 }
 
 .todo-text {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text);
   word-break: break-word;
+  line-height: 1.5;
 }
 
 .todo-item.completed .todo-text {
-  color: #9ca3af;
+  color: var(--text-lighter);
   text-decoration: line-through;
 }
 
 .deadline {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 12px;
   color: var(--text-light);
-  padding: 2px 8px;
-  background: #f3f4f6;
-  border-radius: 4px;
+  padding: 4px 10px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
   width: fit-content;
+  font-weight: 500;
 }
 
 .deadline svg {
@@ -650,31 +724,31 @@ body {
 
 .deadline.overdue {
   color: var(--danger);
-  background: #fef2f2;
+  background: var(--danger-light);
 }
 
 .notify-time {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 11px;
   color: var(--primary);
-  padding: 2px 8px;
-  background: #eef2ff;
-  border-radius: 4px;
+  padding: 3px 8px;
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: var(--radius-sm);
   width: fit-content;
 }
 
 .delete-btn {
-  width: 32px;
-  height: 32px;
-  padding: 6px;
+  width: 34px;
+  height: 34px;
+  padding: 7px;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  color: #d1d5db;
-  transition: all 0.2s;
+  color: var(--text-lighter);
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -683,7 +757,7 @@ body {
 
 .delete-btn:hover {
   color: var(--danger);
-  background: #fef2f2;
+  background: var(--danger-light);
 }
 
 .delete-btn svg {
@@ -691,43 +765,46 @@ body {
   height: 100%;
 }
 
+/* Footer */
 .footer {
-  margin-top: 20px;
+  margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-light);
   display: flex;
   justify-content: center;
   gap: 12px;
 }
 
 .clear-btn, .trash-btn {
-  padding: 10px 18px;
+  padding: 10px 20px;
   font-size: 13px;
   color: var(--text-light);
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-family: inherit;
+  font-weight: 500;
 }
 
 .clear-btn:hover:not(:disabled), .trash-btn:hover {
   color: var(--danger);
   border-color: var(--danger);
-  background: #fef2f2;
+  background: var(--danger-light);
 }
 
 .clear-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
+/* 回收站 */
 .trash-section {
   margin-top: 20px;
   padding: 20px;
   background: var(--bg);
-  border-radius: 12px;
+  border-radius: var(--radius);
   border: 1px dashed var(--border);
 }
 
@@ -751,8 +828,8 @@ body {
   justify-content: space-between;
   padding: 12px;
   background: var(--card);
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
 }
 
 .trash-content {
@@ -760,17 +837,18 @@ body {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
 }
 
 .trash-text {
-  font-size: 14px;
-  color: var(--text);
+  font-size: 13px;
+  color: var(--text-lighter);
   text-decoration: line-through;
 }
 
 .trash-deadline, .trash-time {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-lighter);
 }
 
 .trash-actions {
@@ -780,14 +858,14 @@ body {
 
 .restore-btn, .permdelete-btn {
   width: auto;
-  min-width: 28px;
-  height: 28px;
-  padding: 5px 8px;
+  min-width: 30px;
+  height: 30px;
+  padding: 5px 10px;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -801,16 +879,16 @@ body {
 }
 
 .restore-btn:hover {
-  background: #ecfdf5;
+  background: var(--success-light);
 }
 
 .permdelete-btn {
-  color: #d1d5db;
+  color: var(--text-lighter);
 }
 
 .permdelete-btn:hover {
   color: var(--danger);
-  background: #fef2f2;
+  background: var(--danger-light);
 }
 
 .restore-btn svg, .permdelete-btn svg {
@@ -821,14 +899,14 @@ body {
 
 .clear-trash-btn {
   margin-top: 12px;
-  padding: 8px 16px;
+  padding: 10px 16px;
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-lighter);
   background: transparent;
   border: 1px dashed var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-family: inherit;
   width: 100%;
 }
@@ -836,24 +914,25 @@ body {
 .clear-trash-btn:hover {
   color: var(--danger);
   border-color: var(--danger);
-  background: #fef2f2;
+  background: var(--danger-light);
 }
 
-@media (max-width: 480px) {
+/* Responsive */
+@media (max-width: 520px) {
   .container {
-    padding: 20px;
+    padding: 24px 20px;
   }
 
   .input-section {
+    padding: 16px;
+  }
+
+  .input-row {
     flex-direction: column;
   }
 
   .add-btn {
     width: 100%;
-  }
-
-  .input-row {
-    flex-direction: column;
   }
 
   .deadline-input {
@@ -864,6 +943,7 @@ body {
   .notification-bar {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
 
   .footer {
