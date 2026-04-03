@@ -256,15 +256,19 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
   // 6. 解析时间
   if (matchedTime) {
     const isAfternoon = timePart.includes('下午') || timePart.includes('晚上')
-    const isMorning = timePart.includes('上午') || timePart.includes('早上') || timePart.includes('中午')
+    const isMorning = timePart.includes('上午') || timePart.includes('早上') || timePart.includes('中午') || timePart.includes('凌晨')
     console.log('时间解析 - timePart:', timePart, 'hour:', timeHour, 'min:', timeMin, 'isAfternoon:', isAfternoon, 'isMorning:', isMorning)
 
     let finalHour = timeHour
-    // 调整小时
+    // 调整小时：下午/晚上加12
     if (isAfternoon && finalHour < 12) {
       finalHour += 12
     } else if (isMorning && finalHour < 6) {
       finalHour = 8 // 早上6点以前默认为8点
+    } else if (!isAfternoon && !isMorning && finalHour < 12) {
+      // 纯时间（如"3点"）默认视为下午
+      finalHour += 12
+      if (finalHour >= 24) finalHour -= 24
     }
 
     targetDate.setHours(finalHour, timeMin, 0, 0)
