@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { AuthService, FirebaseDB } from './firebase'
+import type { User } from './firebase'
 
 interface Todo {
   id: number
@@ -280,6 +282,18 @@ function App() {
   const recognitionRef = useRef<any>(null)
   const interimRef = useRef('')
 
+  // 认证状态
+  const [isLoggedIn, setIsLoggedIn] = useState(AuthService.isLoggedIn())
+  const [isAdmin, setIsAdmin] = useState(AuthService.isAdmin())
+  const [currentUser, setCurrentUser] = useState(AuthService.getCurrentUser())
+  const [showAuthForm, setShowAuthForm] = useState(false)
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
+  const [authUsername, setAuthUsername] = useState('')
+  const [authPassword, setAuthPassword] = useState('')
+  const [authMessage, setAuthMessage] = useState('')
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [allUsers, setAllUsers] = useState<User[]>([])
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
   }, [todos])
@@ -530,6 +544,59 @@ function App() {
     }
   }
 
+  // 认证处理
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAuthMessage('')
+
+    if (authMode === 'login') {
+      const result = await AuthService.login(authUsername, authPassword)
+      if (result.success) {
+        setIsLoggedIn(true)
+        setIsAdmin(result.user?.isAdmin || false)
+        setCurrentUser(authUsername)
+        setShowAuthForm(false)
+        setAuthUsername('')
+        setAuthPassword('')
+      } else {
+        setAuthMessage(result.message)
+      }
+    } else {
+      const result = await AuthService.register(authUsername, authPassword)
+      if (result.success) {
+        setAuthMessage('注册成功，请登录')
+        setAuthMode('login')
+      } else {
+        setAuthMessage(result.message)
+      }
+    }
+  }
+
+  const handleLogout = () => {
+    AuthService.logout()
+    setIsLoggedIn(false)
+    setIsAdmin(false)
+    setCurrentUser(null)
+  }
+
+  const loadAllUsers = async () => {
+    const users = await FirebaseDB.getAllUsers()
+    const userList = Object.values(users) as User[]
+    setAllUsers(userList)
+  }
+
+  const toggleAdmin = async (username: string, currentIsAdmin: boolean) => {
+    await AuthService.setAdmin(username, !currentIsAdmin)
+    loadAllUsers()
+  }
+
+  const deleteUser = async (username: string) => {
+    if (window.confirm(`确定删除用户 "${username}" 吗？`)) {
+      await AuthService.deleteUser(username)
+      loadAllUsers()
+    }
+  }
+
   const toggleVoice = () => {
     if (!recognitionRef.current) return
 
@@ -553,9 +620,88 @@ function App() {
     <div className="app">
       <div className="container">
         <header className="header">
-          <h1>待办事项</h1>
-          <p className="subtitle">{todos.filter(t => !t.deletedAt && !t.completed).length} 项待完成</p>
+          <div className="header-top">
+            <div>
+              <h1>待办事项</h1>
+              <p className="subtitle">{todos.filter(t => !t.deletedAt && !t.completed).length} 项待完成</p>
+            </div>
+            <div className="auth-section">
+              {isLoggedIn ? (
+                <>
+                  <span className="user-info">
+                    {currentUser}{isAdmin && <span className="admin-badge">管理员</span>}
+                  </span>
+                  {isAdmin && (
+                    <button className="admin-btn" onClick={() => { loadAllUsers(); setShowAdminPanel(!showAdminPanel); }}>
+                      {showAdminPanel ? '隐藏管理' : '管理'}
+                    </button>
+                  )}
+                  <button className="logout-btn" onClick={handleLogout}>退出</button>
+                </>
+              ) : (
+                <button className="login-btn" onClick={() => { setShowAuthForm(true); setAuthMode('login'); }}>登录</button>
+              )}
+            </div>
+          </div>
         </header>
+
+        {/* 登录/注册表单 */}
+        {showAuthForm && (
+          <div className="auth-form-overlay" onClick={() => setShowAuthForm(false)}>
+            <div className="auth-form" onClick={(e) => e.stopPropagation()}>
+              <h2>{authMode === 'login' ? '登录' : '注册'}</h2>
+              <form onSubmit={handleAuth}>
+                <input
+                  type="text"
+                  placeholder="用户名"
+                  value={authUsername}
+                  onChange={(e) => setAuthUsername(e.target.value)}
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="密码"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  required
+                />
+                {authMessage && <p className="auth-message">{authMessage}</p>}
+                <button type="submit">{authMode === 'login' ? '登录' : '注册'}</button>
+              </form>
+              <p className="auth-switch">
+                {authMode === 'login' ? '还没有账号？' : '已有账号？'}
+                <button onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthMessage(''); }}>
+                  {authMode === 'login' ? '注册' : '登录'}
+                </button>
+              </p>
+              <button className="close-btn" onClick={() => setShowAuthForm(false)}>关闭</button>
+            </div>
+          </div>
+        )}
+
+        {/* 管理员面板 */}
+        {showAdminPanel && isAdmin && (
+          <div className="admin-panel">
+            <h3>用户管理</h3>
+            <ul className="user-list">
+              {allUsers.map(user => (
+                <li key={user.username} className="user-item">
+                  <span className="user-name">
+                    {user.username}
+                    {user.isAdmin && <span className="admin-badge">管理员</span>}
+                  </span>
+                  <span className="user-date">{new Date(user.created).toLocaleDateString('zh-CN')}</span>
+                  <div className="user-actions">
+                    <button onClick={() => toggleAdmin(user.username, user.isAdmin)}>
+                      {user.isAdmin ? '取消管理员' : '设为管理员'}
+                    </button>
+                    <button className="delete-btn" onClick={() => deleteUser(user.username)}>删除</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="input-section">
           <div className="input-row">

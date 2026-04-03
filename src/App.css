@@ -42,8 +42,13 @@ body {
 }
 
 .header {
-  text-align: center;
   margin-bottom: 28px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .header h1 {
@@ -57,6 +62,236 @@ body {
 .subtitle {
   font-size: 14px;
   color: var(--text-light);
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-info {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.admin-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--danger);
+  color: white;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.login-btn, .logout-btn, .admin-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.login-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+}
+
+.login-btn:hover {
+  background: var(--primary-dark);
+}
+
+.logout-btn {
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--border);
+}
+
+.logout-btn:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.admin-btn {
+  background: var(--warning);
+  color: white;
+  border: none;
+}
+
+.admin-btn:hover {
+  background: #d97706;
+}
+
+/* 登录/注册表单 */
+.auth-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.auth-form {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 360px;
+}
+
+.auth-form h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.auth-form button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.auth-form button[type="submit"]:hover {
+  background: var(--primary-dark);
+}
+
+.auth-message {
+  color: var(--danger);
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.auth-switch button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.auth-switch button:hover {
+  text-decoration: underline;
+}
+
+.auth-form .close-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.auth-form .close-btn:hover {
+  background: var(--bg);
+}
+
+/* 管理员面板 */
+.admin-panel {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+
+.admin-panel h3 {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.user-list {
+  list-style: none;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+}
+
+.user-item .user-name {
+  font-weight: 500;
+}
+
+.user-item .user-date {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.user-actions button {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.user-actions button:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.user-actions .delete-btn:hover {
+  background: var(--danger);
+  border-color: var(--danger);
 }
 
 .input-section {
