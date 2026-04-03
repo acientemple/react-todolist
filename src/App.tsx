@@ -177,12 +177,13 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
   const textWithNum = convertCnNum(remainingText)
   console.log('转换后文本:', textWithNum)
 
-  // 匹配时间：上午9点、下午3点、9点、9点半、11:05、11点5分等
+  // 匹配时间：上午9点、下午3点、9点、9点半、11:05、11点5分、3点50等
   const timePatterns = [
     /((?:上午|早上|下午|晚上|中午|凌晨)\s*)(\d{1,2})点(?:(\d{1,2})分)?(?:半)?/,  // 上午9点、上午9点30分
     /(\d{1,2}):(\d{2})/,  // 11:05 格式
     /(\d{1,2})点(\d{1,2})分/,  // 11点5分 格式
     /(\d{1,2})点半/,
+    /(\d{1,2})点(\d{1,2})/,  // 3点50 格式（点后面直接跟数字）
     /(\d{1,2})点/
   ]
 
@@ -214,6 +215,12 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
         // 9点半 格式
         timeHour = parseInt(match[1])
         timeMin = 30
+        matchedTime = true
+        break
+      } else if (pattern.source.includes('点') && !pattern.source.includes('分') && match.length >= 3) {
+        // 3点50 格式 - 点后面跟数字但没有"分"字
+        timeHour = parseInt(match[1])
+        timeMin = parseInt(match[2])
         matchedTime = true
         break
       } else if (match[2]) {
