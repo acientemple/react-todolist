@@ -286,7 +286,6 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(AuthService.isLoggedIn())
   const [isAdmin, setIsAdmin] = useState(AuthService.isAdmin())
   const [currentUser, setCurrentUser] = useState(AuthService.getCurrentUser())
-  const [showAuthForm, setShowAuthForm] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   const [authUsername, setAuthUsername] = useState('')
   const [authPassword, setAuthPassword] = useState('')
@@ -555,7 +554,6 @@ function App() {
         setIsLoggedIn(true)
         setIsAdmin(result.user?.isAdmin || false)
         setCurrentUser(authUsername)
-        setShowAuthForm(false)
         setAuthUsername('')
         setAuthPassword('')
       } else {
@@ -626,7 +624,7 @@ function App() {
               <p className="subtitle">{todos.filter(t => !t.deletedAt && !t.completed).length} 项待完成</p>
             </div>
             <div className="auth-section">
-              {isLoggedIn ? (
+              {isLoggedIn && (
                 <>
                   <span className="user-info">
                     {currentUser}{isAdmin && <span className="admin-badge">管理员</span>}
@@ -638,49 +636,53 @@ function App() {
                   )}
                   <button className="logout-btn" onClick={handleLogout}>退出</button>
                 </>
-              ) : (
-                <button className="login-btn" onClick={() => { setShowAuthForm(true); setAuthMode('login'); }}>登录</button>
               )}
             </div>
           </div>
         </header>
 
         {/* 登录/注册表单 */}
-        {showAuthForm && (
-          <div className="auth-form-overlay" onClick={() => setShowAuthForm(false)}>
-            <div className="auth-form" onClick={(e) => e.stopPropagation()}>
-              <h2>{authMode === 'login' ? '登录' : '注册'}</h2>
-              <form onSubmit={handleAuth}>
-                <input
-                  type="text"
-                  placeholder="用户名"
-                  value={authUsername}
-                  onChange={(e) => setAuthUsername(e.target.value)}
-                  required
-                />
-                <input
-                  type="password"
-                  placeholder="密码"
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  required
-                />
-                {authMessage && <p className="auth-message">{authMessage}</p>}
-                <button type="submit">{authMode === 'login' ? '登录' : '注册'}</button>
-              </form>
-              <p className="auth-switch">
-                {authMode === 'login' ? '还没有账号？' : '已有账号？'}
-                <button onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthMessage(''); }}>
-                  {authMode === 'login' ? '注册' : '登录'}
-                </button>
-              </p>
-              <button className="close-btn" onClick={() => setShowAuthForm(false)}>关闭</button>
+        {!isLoggedIn && (
+          <div className="auth-section-page">
+            <div className="auth-tabs">
+              <button
+                className={authMode === 'login' ? 'active' : ''}
+                onClick={() => { setAuthMode('login'); setAuthMessage(''); }}
+              >
+                登录
+              </button>
+              <button
+                className={authMode === 'register' ? 'active' : ''}
+                onClick={() => { setAuthMode('register'); setAuthMessage(''); }}
+              >
+                注册
+              </button>
             </div>
+            <form className="auth-form-inline" onSubmit={handleAuth}>
+              <input
+                type="text"
+                placeholder="用户名"
+                value={authUsername}
+                onChange={(e) => setAuthUsername(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="密码"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                required
+              />
+              {authMessage && <p className="auth-message">{authMessage}</p>}
+              <button type="submit" className="auth-submit">
+                {authMode === 'login' ? '登录' : '注册'}
+              </button>
+            </form>
           </div>
         )}
 
         {/* 管理员面板 */}
-        {showAdminPanel && isAdmin && (
+        {isLoggedIn && isAdmin && (
           <div className="admin-panel">
             <h3>用户管理</h3>
             <ul className="user-list">
