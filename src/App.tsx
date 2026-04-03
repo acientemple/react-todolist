@@ -1020,19 +1020,32 @@ function App() {
           <div className="webhook-section" style={{ marginBottom: 16, padding: '12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 13, color: 'var(--text-light)' }}>Webhook:</span>
-              <input
-                type="text"
-                placeholder="输入企业微信群机器人的 webhook URL"
-                value={userWebhook}
-                onChange={(e) => setUserWebhook(e.target.value)}
-                style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
-              />
+              {webhookSaved && userWebhook ? (
+                <span style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 13, color: 'var(--success)', background: '#ecfdf5', borderRadius: 6 }}>
+                  已保存 {userWebhook.replace(/https?:\/\/.+\?key=/, '****?key=')}
+                </span>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="输入企业微信群机器人的 webhook URL"
+                  value={userWebhook}
+                  onChange={(e) => setUserWebhook(e.target.value)}
+                  style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
+                />
+              )}
               <button
                 className="test-btn"
-                onClick={saveWebhook}
-                style={{ background: webhookSaved ? 'var(--success)' : undefined, color: webhookSaved ? 'white' : undefined }}
+                onClick={() => {
+                  if (webhookSaved) {
+                    setUserWebhook('')
+                    setWebhookSaved(false)
+                  } else {
+                    saveWebhook()
+                  }
+                }}
+                style={{ background: webhookSaved ? 'var(--danger)' : undefined, color: webhookSaved ? 'white' : undefined }}
               >
-                {webhookSaved ? '已保存' : '保存'}
+                {webhookSaved ? '修改' : '保存'}
               </button>
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 6 }}>
