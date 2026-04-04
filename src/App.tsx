@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { AuthService, FirebaseDB } from './firebase'
 import type { User } from './firebase'
 import emailjs from '@emailjs/browser'
+import { LLM_PROVIDERS, parseTimeWithLLM } from './llm'
 
 // EmailJS 配置
 const EMAILJS_SERVICE_ID = 'service_mm0l2m5'
@@ -362,6 +363,13 @@ function App() {
   const [oldPassword, setOldPassword] = useState('')
   const [changeNewPassword, setChangeNewPassword] = useState('')
   const [changePasswordMsg, setChangePasswordMsg] = useState('')
+  // LLM 设置
+  const [showLLMSettings, setShowLLMSettings] = useState(false)
+  const [llmProvider, setLlmProvider] = useState('')
+  const [llmApiKey, setLlmApiKey] = useState('')
+  const [llmModel, setLlmModel] = useState('')
+  const [llmTesting, setLlmTesting] = useState(false)
+  const [llmTestResult, setLlmTestResult] = useState('')
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
@@ -729,6 +737,34 @@ function App() {
       setChangeNewPassword('')
       setShowChangePassword(false)
     }
+  }
+
+  const saveLLMConfig = async () => {
+    if (!currentUser || !llmProvider || !llmApiKey) return
+    await FirebaseDB.updateUser(currentUser, {
+      llmProvider,
+      llmApiKey,
+      llmModel
+    })
+    alert('AI 设置已保存')
+  }
+
+  const testLLM = async () => {
+    if (!llmProvider || !llmApiKey) {
+      setLlmTestResult('请先选择模型并输入 API Key')
+      return
+    }
+    setLlmTesting(true)
+    setLlmTestResult('测试中...')
+    const provider = LLM_PROVIDERS.find(p => p.id === llmProvider)
+    const result = await parseTimeWithLLM('明天下午3点开会', {
+      provider: llmProvider,
+      name: provider?.name || '',
+      apiKey: llmApiKey,
+      model: llmModel || provider?.models[0] || ''
+    })
+    setLlmTesting(false)
+    setLlmTestResult(result.success ? '测试成功！' : result.error || '测试失败')
   }
 
   const loadAllUsers = async () => {
@@ -1118,6 +1154,75 @@ function App() {
             <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 6 }}>
               保存后将使用您自己的企业微信机器人接收通知
             </div>
+          </div>
+        )}
+
+        {/* AI 时间解析设置 */}
+        {isLoggedIn && (
+          <div className="webhook-section" style={{ marginBottom: 16, padding: '16px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showLLMSettings ? 12 : 0 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>AI 时间解析</span>
+              <button
+                className="test-btn"
+                onClick={() => setShowLLMSettings(!showLLMSettings)}
+              >
+                {showLLMSettings ? '收起' : '设置'}
+              </button>
+            </div>
+            {showLLMSettings && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <select
+                  value={llmProvider}
+                  onChange={(e) => {
+                    setLlmProvider(e.target.value)
+                    const provider = LLM_PROVIDERS.find(p => p.id === e.target.value)
+                    setLlmModel(provider?.models[0] || '')
+                  }}
+                  style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6, background: 'white' }}
+                >
+                  <option value="">选择 AI 模型</option>
+                  {LLM_PROVIDERS.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.free})</option>
+                  ))}
+                </select>
+                {llmProvider && (
+                  <>
+                    <select
+                      value={llmModel}
+                      onChange={(e) => setLlmModel(e.target.value)}
+                      style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6, background: 'white' }}
+                    >
+                      {(LLM_PROVIDERS.find(p => p.id === llmProvider)?.models || []).map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="password"
+                      placeholder="输入 API Key"
+                      value={llmApiKey}
+                      onChange={(e) => setLlmApiKey(e.target.value)}
+                      style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
+                    />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="test-btn" onClick={testLLM} disabled={llmTesting} style={{ flex: 1 }}>
+                        {llmTesting ? '测试中...' : '测试连接'}
+                      </button>
+                      <button className="test-btn" onClick={saveLLMConfig} style={{ flex: 1, background: 'var(--primary)', color: 'white' }}>
+                        保存
+                      </button>
+                    </div>
+                    {llmTestResult && (
+                      <span style={{ fontSize: 12, color: llmTestResult.includes('成功') ? 'var(--success)' : 'var(--danger)' }}>
+                        {llmTestResult}
+                      </span>
+                    )}
+                    <div style={{ fontSize: 11, color: 'var(--text-light)', padding: '8px', background: 'white', borderRadius: 6, lineHeight: 1.6 }}>
+                      配置 AI 模型后，输入事项时会自动解析时间。例如："明天下午三点开会" → 自动设置截止时间。
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 

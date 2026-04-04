@@ -33,6 +33,9 @@ export interface User {
   isAdmin: boolean;
   created: string;
   wechatWebhook?: string; // 用户的企业微信 webhook URL
+  llmProvider?: string;   // AI 模型提供商
+  llmApiKey?: string;     // AI API Key
+  llmModel?: string;      // AI 模型名称
 }
 
 // 密码重置请求接口
@@ -84,6 +87,15 @@ export const FirebaseDB = {
     const user = await this.getUser(username);
     if (user) {
       user.wechatWebhook = webhook;
+      await this.saveUser(username, user);
+    }
+  },
+
+  // 更新用户信息（通用方法）
+  async updateUser(username: string, updates: Partial<User>) {
+    const user = await this.getUser(username);
+    if (user) {
+      Object.assign(user, updates);
       await this.saveUser(username, user);
     }
   },
