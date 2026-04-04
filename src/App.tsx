@@ -459,14 +459,40 @@ function App() {
     return `${weekday}${month}月${day}日 ${ampm}${displayHours.toString().padStart(2, '0')}:${minutes}`
   }
 
-  const handleVoiceResult = (transcript: string) => {
+  const handleVoiceResult = async (transcript: string) => {
     setVoiceResult('识别: "' + transcript + '"')
-    const { deadline } = parseTimeFromText(transcript)
     setInputValue(transcript)
     setInterimText('')
+
+    let deadline: string | undefined
+    let llmResult: string | null = null
+
+    // 如果配置了 LLM，优先使用 AI 解析
+    if (llmProvider && llmApiKey) {
+      const result = await parseTimeWithLLM(transcript, {
+        provider: llmProvider,
+        name: LLM_PROVIDERS.find(p => p.id === llmProvider)?.name || '',
+        apiKey: llmApiKey,
+        model: llmModel || ''
+      })
+      if (result.success && result.timeText) {
+        const { deadline: d } = parseTimeFromText(result.timeText)
+        if (d) {
+          deadline = d
+          llmResult = 'AI解析: ' + result.timeText
+        }
+      }
+    }
+
+    // 如果 AI 没有解析成功，使用原有规则
+    if (!deadline) {
+      const { deadline: d } = parseTimeFromText(transcript)
+      deadline = d
+    }
+
     if (deadline) {
       setDeadlineValue(deadline)
-      setParsedTime('已识别时间: ' + formatTimeDisplay(deadline))
+      setParsedTime(llmResult || '已识别时间: ' + formatTimeDisplay(deadline))
       setTimeout(() => {
         setParsedTime('')
         setVoiceResult('')
@@ -526,12 +552,36 @@ function App() {
     return () => clearInterval(interval)
   }, [todos, notifyEnabled])
 
-  const addTodo = () => {
+  const addTodo = async () => {
     const text = inputValue.trim()
     if (!text) return
 
-    // 解析文本中的时间
-    const { deadline: parsedDeadline } = parseTimeFromText(text)
+    let parsedDeadline: string | undefined
+    let llmResult: string | null = null
+
+    // 如果配置了 LLM，优先使用 AI 解析
+    if (llmProvider && llmApiKey) {
+      const result = await parseTimeWithLLM(text, {
+        provider: llmProvider,
+        name: LLM_PROVIDERS.find(p => p.id === llmProvider)?.name || '',
+        apiKey: llmApiKey,
+        model: llmModel || ''
+      })
+      if (result.success && result.timeText) {
+        // 用 AI 返回的时间文本再次解析
+        const { deadline } = parseTimeFromText(result.timeText)
+        if (deadline) {
+          parsedDeadline = deadline
+          llmResult = 'AI解析: ' + result.timeText
+        }
+      }
+    }
+
+    // 如果 AI 没有解析成功，使用原有规则
+    if (!parsedDeadline) {
+      const { deadline } = parseTimeFromText(text)
+      parsedDeadline = deadline
+    }
 
     setTodos([...todos, {
       id: Date.now(),
@@ -541,7 +591,10 @@ function App() {
     }])
     setInputValue('')
     setDeadlineValue('')
-    if (parsedDeadline) {
+    if (llmResult) {
+      setParsedTime(llmResult)
+      setTimeout(() => setParsedTime(''), 3000)
+    } else if (parsedDeadline) {
       setParsedTime('已识别时间: ' + formatTimeDisplay(parsedDeadline))
       setTimeout(() => setParsedTime(''), 3000)
     } else {
@@ -637,12 +690,16 @@ function App() {
         setIsLoggedIn(true)
         setIsAdmin(result.user?.isAdmin || false)
         setCurrentUser(authUsername)
-        // 加载用户的 webhook 设置
+        // 加载用户的 webhook 和 LLM 设置
         const userData = await FirebaseDB.getUser(authUsername)
         if (userData) {
           setUserWebhook('')
           setWebhookSaved(!!userData.wechatWebhook)
           setSavedWebhook(userData.wechatWebhook || '')
+          // 加载 LLM 配置
+          setLlmProvider(userData.llmProvider || '')
+          setLlmApiKey(userData.llmApiKey || '')
+          setLlmModel(userData.llmModel || '')
         }
         setAuthUsername('')
         setAuthPassword('')
