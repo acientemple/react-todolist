@@ -969,7 +969,11 @@ function App() {
                 placeholder={isRecording ? '正在聆听...' : '输入新任务，或点击麦克风语音输入'}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addTodo()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && inputValue.trim()) {
+                    addTodo()
+                  }
+                }}
               />
               {isRecording && interimText && (
                 <div className="interim-text">{interimText}</div>
