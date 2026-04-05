@@ -1323,14 +1323,22 @@ function App() {
             .sort((a, b) => {
               // 未完成的优先
               if (a.completed !== b.completed) return a.completed ? 1 : -1
+              // 检查是否过期
+              const now = Date.now()
+              const aOverdue = a.deadline && new Date(a.deadline).getTime() < now
+              const bOverdue = b.deadline && new Date(b.deadline).getTime() < now
+              // 过期的事项排到最后
+              if (aOverdue !== bOverdue) return aOverdue ? 1 : -1
               // 按截止时间排序，没有时间的排最后
               if (!a.deadline && !b.deadline) return 0
               if (!a.deadline) return 1
               if (!b.deadline) return -1
               return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
             })
-            .map(todo => (
-            <li key={todo.id} className={'todo-item' + (todo.completed ? ' completed' : '')}>
+            .map(todo => {
+              const isOverdue = todo.deadline && new Date(todo.deadline).getTime() < Date.now()
+              return (
+            <li key={todo.id} className={'todo-item' + (todo.completed ? ' completed' : '') + (isOverdue ? ' overdue' : '')}>
               <label className="todo-label" onClick={() => toggleTodo(todo.id)}>
                 <input
                   type="checkbox"
@@ -1340,7 +1348,7 @@ function App() {
                 <div className="todo-content">
                   <span className="todo-text">{todo.text}</span>
                   {todo.deadline && (
-                    <span className={'deadline' + (formatDeadline(todo.deadline).isOverdue ? ' overdue' : '')}>
+                    <span className={'deadline' + (isOverdue ? ' overdue' : '')}>
                       {formatDeadline(todo.deadline).dateStr}
                     </span>
                   )}
@@ -1361,7 +1369,8 @@ function App() {
                 </svg>
               </button>
             </li>
-          ))}
+          )}
+          )}
         </ul>
 
         {todos.length > 0 && (

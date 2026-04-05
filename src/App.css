@@ -703,6 +703,13 @@ body {
   text-decoration: line-through;
 }
 
+/* 过期未完成的事项 */
+.todo-item.overdue:not(.completed) .todo-text {
+  color: var(--danger);
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
 .deadline {
   display: inline-flex;
   align-items: center;
