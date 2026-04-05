@@ -821,7 +821,33 @@ function App() {
       model: llmModel || provider?.models[0] || ''
     })
     setLlmTesting(false)
-    setLlmTestResult(result.success ? '测试成功！' : result.error || '测试失败')
+    if (result.success) {
+      // 测试成功时自动保存
+      if (currentUser) {
+        await FirebaseDB.updateUser(currentUser, {
+          llmProvider,
+          llmApiKey,
+          llmModel: llmModel || provider?.models[0] || ''
+        })
+      }
+      setLlmTestResult('测试成功并已保存！')
+    } else {
+      setLlmTestResult(result.error || '测试失败')
+    }
+  }
+
+  const clearLLMConfig = async () => {
+    if (!currentUser) return
+    await FirebaseDB.updateUser(currentUser, {
+      llmProvider: '',
+      llmApiKey: '',
+      llmModel: ''
+    })
+    setLlmProvider('')
+    setLlmApiKey('')
+    setLlmModel('')
+    setLlmTestResult('')
+    alert('AI 配置已清除')
   }
 
   const loadAllUsers = async () => {
@@ -1266,6 +1292,9 @@ function App() {
                       </button>
                       <button className="test-btn" onClick={saveLLMConfig} disabled={llmTesting} style={{ flex: 1, background: 'var(--primary)', color: 'white', opacity: llmTesting ? 0.7 : 1 }}>
                         保存
+                      </button>
+                      <button className="test-btn" onClick={clearLLMConfig} disabled={llmTesting} style={{ flex: 1, background: '#9e9e9e', color: 'white' }}>
+                        清除
                       </button>
                     </div>
                     {llmTesting && (
