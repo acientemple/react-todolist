@@ -96,6 +96,22 @@ const SYSTEM_PROMPT = `你是一个时间解析助手。用户会输入一段话
 - task 应该只包含任务内容，不包含时间
 `
 
+// 带超时的 fetch
+const fetchWithTimeout = async (url: string, options: RequestInit, timeout = 15000): Promise<Response> => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+    return response
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
 // 解析用户输入的时间
 export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise<LLMResponse> {
   if (!config.apiKey) {
@@ -107,7 +123,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
 
     switch (config.provider) {
       case 'openai':
-        response = await fetch(config.endpoint || 'https://api.openai.com/v1/chat/completions', {
+        response = await fetchWithTimeout(config.endpoint || 'https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -125,7 +141,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
         break
 
       case 'anthropic':
-        response = await fetch(config.endpoint || 'https://api.anthropic.com/v1/messages', {
+        response = await fetchWithTimeout(config.endpoint || 'https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -144,7 +160,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
         break
 
       case 'google':
-        response = await fetch(`${config.endpoint || 'https://generativelanguage.googleapis.com/v1beta/models'}/${config.model || 'gemini-2.0-flash'}:generateContent?key=${config.apiKey}`, {
+        response = await fetchWithTimeout(`${config.endpoint || 'https://generativelanguage.googleapis.com/v1beta/models'}/${config.model || 'gemini-2.0-flash'}:generateContent?key=${config.apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -157,7 +173,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
         break
 
       case 'deepseek':
-        response = await fetch(config.endpoint || 'https://api.deepseek.com/v1/chat/completions', {
+        response = await fetchWithTimeout(config.endpoint || 'https://api.deepseek.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -175,7 +191,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
         break
 
       case 'minimax':
-        response = await fetch(config.endpoint || 'https://api.minimax.chat/v1/text/chatcompletion_v2', {
+        response = await fetchWithTimeout(config.endpoint || 'https://api.minimax.chat/v1/text/chatcompletion_v2', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -193,7 +209,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
         break
 
       case 'moonshot':
-        response = await fetch(config.endpoint || 'https://api.moonshot.cn/v1/chat/completions', {
+        response = await fetchWithTimeout(config.endpoint || 'https://api.moonshot.cn/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -211,7 +227,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
         break
 
       case 'zhipu':
-        response = await fetch(config.endpoint || 'https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+        response = await fetchWithTimeout(config.endpoint || 'https://open.bigmodel.cn/api/paas/v4/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -229,7 +245,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
         break
 
       case 'ali':
-        response = await fetch(config.endpoint || 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation', {
+        response = await fetchWithTimeout(config.endpoint || 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -254,6 +270,10 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
 
     if (!response.ok) {
       const errorText = await response.text()
+      // 检查是否是 CORS 错误
+      if (response.type === 'opaque' || response.status === 0) {
+        return { success: false, error: '网络错误：可能是 CORS 限制或 API 不支持浏览器直接调用' }
+      }
       return { success: false, error: `API 错误: ${response.status} - ${errorText}` }
     }
 
@@ -303,6 +323,10 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
     }
 
   } catch (error: any) {
+    // 处理超时错误
+    if (error.name === 'AbortError') {
+      return { success: false, error: '请求超时（15秒），请检查网络或 API 是否可用' }
+    }
     return { success: false, error: error.message || '请求失败' }
   }
 }
