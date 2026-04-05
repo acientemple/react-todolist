@@ -46,7 +46,7 @@ export const LLM_PROVIDERS = [
   {
     id: 'minimax',
     name: 'MiniMax',
-    models: ['MiniMax-Text-01', 'abab6.5s-chat', 'abab5.5s-chat'],
+    models: ['MiniMax-M2.7', 'MiniMax-Text-01', 'abab6.5s-chat', 'abab5.5s-chat'],
     endpoint: 'https://api.minimax.chat/v1/text/chatcompletion_v2',
     free: '需要申请'
   },
