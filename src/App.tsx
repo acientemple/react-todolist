@@ -1261,17 +1261,22 @@ function App() {
                       style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
                     />
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="test-btn" onClick={testLLM} disabled={llmTesting} style={{ flex: 1 }}>
+                      <button className="test-btn" onClick={testLLM} disabled={llmTesting || !llmProvider || !llmApiKey} style={{ flex: 1, opacity: llmTesting ? 0.7 : 1 }}>
                         {llmTesting ? '测试中...' : '测试连接'}
                       </button>
-                      <button className="test-btn" onClick={saveLLMConfig} style={{ flex: 1, background: 'var(--primary)', color: 'white' }}>
+                      <button className="test-btn" onClick={saveLLMConfig} disabled={llmTesting} style={{ flex: 1, background: 'var(--primary)', color: 'white', opacity: llmTesting ? 0.7 : 1 }}>
                         保存
                       </button>
                     </div>
+                    {llmTesting && (
+                      <div style={{ fontSize: 12, color: 'var(--text-light)', padding: '4px 8px' }}>
+                        正在连接 AI 服务，请稍候...
+                      </div>
+                    )}
                     {llmTestResult && (
-                      <span style={{ fontSize: 12, color: llmTestResult.includes('成功') ? 'var(--success)' : 'var(--danger)' }}>
+                      <div style={{ fontSize: 12, color: llmTestResult.includes('成功') ? 'var(--success)' : 'var(--danger)', padding: '4px 8px', background: llmTestResult.includes('成功') ? '#e8f5e9' : '#ffebee', borderRadius: 4 }}>
                         {llmTestResult}
-                      </span>
+                      </div>
                     )}
                     <div style={{ fontSize: 11, color: 'var(--text-light)', padding: '8px', background: 'white', borderRadius: 6, lineHeight: 1.6 }}>
                       配置 AI 模型后，输入事项时会自动解析时间。例如："明天下午三点开会" → 自动设置截止时间。
