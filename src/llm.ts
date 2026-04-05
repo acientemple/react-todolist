@@ -296,7 +296,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
           content = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
           break
         case 'minimax':
-          content = data.choices?.[0]?.messages?.[0]?.text || ''
+          content = data.choices?.[0]?.messages?.[0]?.content || data.choices?.[0]?.messages?.[0]?.text || ''
           break
         case 'ali':
           content = data.output?.text || ''
