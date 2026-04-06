@@ -773,6 +773,8 @@ function App() {
     setIsAdmin(false)
     setCurrentUser(null)
     setUserWebhook('')
+    setTodos([])
+    localStorage.removeItem(STORAGE_KEY)
   }
 
   const saveWebhook = async () => {
