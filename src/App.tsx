@@ -810,16 +810,6 @@ function App() {
     }
   }
 
-  const saveLLMConfig = async () => {
-    if (!currentUser || !llmProvider || !llmApiKey) return
-    await FirebaseDB.updateUser(currentUser, {
-      llmProvider,
-      llmApiKey,
-      llmModel
-    })
-    alert('AI 设置已保存')
-  }
-
   const testLLM = async () => {
     if (!llmProvider || !llmApiKey) {
       setLlmTestResult('请先选择模型并输入 API Key')
@@ -1301,11 +1291,8 @@ function App() {
                       style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
                     />
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="test-btn" onClick={testLLM} disabled={llmTesting || !llmProvider || !llmApiKey} style={{ flex: 1, opacity: llmTesting ? 0.7 : 1 }}>
+                      <button className="test-btn" onClick={testLLM} disabled={llmTesting || !llmApiKey} style={{ flex: 1, opacity: llmTesting ? 0.7 : 1 }}>
                         {llmTesting ? '测试中...' : '测试连接'}
-                      </button>
-                      <button className="test-btn" onClick={saveLLMConfig} disabled={llmTesting} style={{ flex: 1, background: 'var(--primary)', color: 'white', opacity: llmTesting ? 0.7 : 1 }}>
-                        保存
                       </button>
                       <button className="test-btn" onClick={clearLLMConfig} disabled={llmTesting} style={{ flex: 1, background: '#9e9e9e', color: 'white' }}>
                         清除
