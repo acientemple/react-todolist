@@ -1293,15 +1293,6 @@ function App() {
                 </select>
                 {llmProvider && (
                   <>
-                    <select
-                      value={llmModel}
-                      onChange={(e) => setLlmModel(e.target.value)}
-                      style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6, background: 'white' }}
-                    >
-                      {(LLM_PROVIDERS.find(p => p.id === llmProvider)?.models || []).map(m => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
                     <input
                       type="text"
                       placeholder="输入 API Key"
