@@ -1303,7 +1303,7 @@ function App() {
                       ))}
                     </select>
                     <input
-                      type="password"
+                      type="text"
                       placeholder="输入 API Key"
                       value={llmApiKey}
                       onChange={(e) => setLlmApiKey(e.target.value)}
