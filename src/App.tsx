@@ -402,7 +402,7 @@ function App() {
     if (currentUser) {
       FirebaseDB.updateUser(currentUser, { useAITimeParsing })
     }
-  }, [useAITimeParsing])
+  }, [useAITimeParsing, currentUser])
 
   useEffect(() => {
     localStorage.setItem(DELETED_KEY, JSON.stringify(deletedTodos))
