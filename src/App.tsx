@@ -373,6 +373,7 @@ function App() {
   const [llmModel, setLlmModel] = useState('')
   const [llmTesting, setLlmTesting] = useState(false)
   const [llmTestResult, setLlmTestResult] = useState('')
+  const [llmSaved, setLlmSaved] = useState(false)
   // 是否使用AI时间解析
   const [useAITimeParsing, setUseAITimeParsing] = useState(() => {
     const saved = localStorage.getItem('use-ai-time-parsing')
@@ -835,6 +836,7 @@ function App() {
         })
       }
       setLlmTestResult('测试成功并已保存！')
+      setLlmSaved(true)
     } else {
       setLlmTestResult(result.error || '测试失败')
     }
@@ -851,6 +853,7 @@ function App() {
     setLlmApiKey('')
     setLlmModel('')
     setLlmTestResult('')
+    setLlmSaved(false)
     alert('AI 配置已清除')
   }
 
@@ -1290,8 +1293,13 @@ function App() {
                       onChange={(e) => setLlmApiKey(e.target.value)}
                       style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
                     />
+                    {llmSaved && (
+                      <div style={{ fontSize: 13, color: 'var(--success)', padding: '8px 12px', background: '#e8f5e9', borderRadius: 6, textAlign: 'center' }}>
+                        已保存
+                      </div>
+                    )}
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="test-btn" onClick={testLLM} disabled={llmTesting || !llmApiKey} style={{ flex: 1, opacity: llmTesting ? 0.7 : 1 }}>
+                      <button className="test-btn" onClick={testLLM} disabled={llmTesting || !llmApiKey || llmSaved} style={{ flex: 1, opacity: (llmTesting || llmSaved) ? 0.7 : 1 }}>
                         {llmTesting ? '测试中...' : '测试连接'}
                       </button>
                       <button className="test-btn" onClick={clearLLMConfig} disabled={llmTesting} style={{ flex: 1, background: '#9e9e9e', color: 'white' }}>
