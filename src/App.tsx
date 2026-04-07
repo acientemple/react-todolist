@@ -588,6 +588,24 @@ function App() {
         model: llmModel || '',
         currentTime: currentTimeStr
       })
+
+      // 如果 AI 返回了多个 deadline，创建多个 todo
+      if (result.success && result.deadlines && result.deadlines.length > 0) {
+        const newTodos = result.deadlines.map((item, index) => ({
+          id: Date.now() + index,
+          text: item.task,
+          completed: false,
+          deadline: item.deadline || undefined
+        }))
+        setTodos([...todos, ...newTodos])
+        setInputValue('')
+        setDeadlineValue('')
+        setParsedTime(`AI解析: 添加了${newTodos.length}个任务`)
+        setTimeout(() => setParsedTime(''), 3000)
+        return
+      }
+
+      // 单个 deadline 的处理
       if (result.success && result.deadline) {
         parsedDeadline = result.deadline
         llmResult = 'AI解析'

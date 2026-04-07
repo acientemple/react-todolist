@@ -12,6 +12,7 @@ export interface LLMResponse {
   success: boolean
   timeText?: string
   deadline?: string
+  deadlines?: Array<{ task: string; deadline: string }>
   error?: string
 }
 
@@ -76,11 +77,11 @@ export const LLM_PROVIDERS = [
 ]
 
 // 系统提示词
-const SYSTEM_PROMPT = `你是一个时间解析助手。用户会输入一段话，你需要从中提取任务内容，并计算出精确的时间点。
+const SYSTEM_PROMPT = `你是一个时间解析助手。用户会输入一段话，可能包含多个任务和时间，你需要为每个有时间信息的任务计算出精确的时间点。
 
 当前时间：2026年4月8日 下午1点（13:00）
 
-请分析用户输入，计算出精确的时间点。
+请分析用户输入，为每个有时间信息的任务计算出精确的时间点。
 
 支持的格式：
 - 具体日期：今天、明天、后天、下周、下个月、4月10号、星期三、下星期一
@@ -96,16 +97,19 @@ const SYSTEM_PROMPT = `你是一个时间解析助手。用户会输入一段话
 - "两小时后" → 当前时间 + 2小时 = 15:00
 - "半小时后" → 当前时间 + 30分钟 = 13:30
 
-返回格式（必须是有效的JSON）：
+返回格式（必须是有效的JSON数组）：
 {
-  "task": "任务内容",
-  "deadline": "YYYY-MM-DDTHH:mm格式的精确时间，如：2026-04-08T15:00"
+  "deadlines": [
+    {"task": "任务1描述（不包含时间）", "deadline": "YYYY-MM-DDTHH:mm格式"},
+    {"task": "任务2描述（不包含时间）", "deadline": "YYYY-MM-DDTHH:mm格式"}
+  ]
 }
 
 注意：
-- deadline 必须是精确的日期时间，格式为 YYYY-MM-DDTHH:mm
-- 不要返回中文时间描述，直接返回计算好的具体时间
-- task 应该只包含任务内容，不包含时间
+- 返回数组deadlines，每个元素包含task和deadline
+- deadline格式必须是YYYY-MM-DDTHH:mm，如2026-04-08T15:00
+- task只包含任务描述，不包含时间信息
+- 如果用户只输入了一个任务，只返回一个元素
 `
 
 // 带超时的 fetch
@@ -329,6 +333,14 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
       const jsonMatch = content.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         const result = JSON.parse(jsonMatch[0])
+        // 支持新的数组格式 deadlines
+        if (result.deadlines && Array.isArray(result.deadlines)) {
+          return {
+            success: true,
+            deadlines: result.deadlines,
+          }
+        }
+        // 兼容旧格式
         return {
           success: true,
           timeText: result.time || '',
