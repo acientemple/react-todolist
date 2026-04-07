@@ -273,9 +273,12 @@ function parseTimeFromText(text: string): { taskText: string; deadline?: string 
     } else if (isMorning && finalHour < 6) {
       finalHour = 8 // 早上6点以前默认为8点
     } else if (!isAfternoon && !isMorning && finalHour < 12) {
-      // 纯时间（如"3点"）默认视为下午
-      finalHour += 12
-      if (finalHour >= 24) finalHour -= 24
+      // 纯时间默认视为上午（如"7点"保持为7点，"11点"保持为11点）
+      // 只有当时间为0-5点时才加12（如"3点"变为"15点"下午3点）
+      if (finalHour < 6) {
+        finalHour += 12
+        if (finalHour >= 24) finalHour -= 24
+      }
     }
 
     targetDate.setHours(finalHour, timeMin, 0, 0)
@@ -370,6 +373,11 @@ function App() {
   const [llmModel, setLlmModel] = useState('')
   const [llmTesting, setLlmTesting] = useState(false)
   const [llmTestResult, setLlmTestResult] = useState('')
+  // 是否使用AI时间解析
+  const [useAITimeParsing, setUseAITimeParsing] = useState(() => {
+    const saved = localStorage.getItem('use-ai-time-parsing')
+    return saved ? JSON.parse(saved) : false
+  })
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
@@ -382,6 +390,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('notify-minutes', JSON.stringify(notifyMinutes))
   }, [notifyMinutes])
+
+  useEffect(() => {
+    localStorage.setItem('use-ai-time-parsing', JSON.stringify(useAITimeParsing))
+  }, [useAITimeParsing])
 
   useEffect(() => {
     localStorage.setItem(DELETED_KEY, JSON.stringify(deletedTodos))
@@ -559,8 +571,8 @@ function App() {
     let parsedDeadline: string | undefined
     let llmResult: string | null = null
 
-    // 如果配置了 LLM，优先使用 AI 解析
-    if (llmProvider && llmApiKey) {
+    // 如果开启了 AI 解析且配置了 LLM，优先使用 AI 解析
+    if (useAITimeParsing && llmProvider && llmApiKey) {
       const result = await parseTimeWithLLM(text, {
         provider: llmProvider,
         name: LLM_PROVIDERS.find(p => p.id === llmProvider)?.name || '',
@@ -577,7 +589,7 @@ function App() {
       }
     }
 
-    // 如果 AI 没有解析成功，使用原有规则
+    // 如果没有使用 AI 解析或 AI 没有解析成功，使用原有规则
     if (!parsedDeadline) {
       const { deadline } = parseTimeFromText(text)
       parsedDeadline = deadline
@@ -1256,6 +1268,15 @@ function App() {
             </div>
             {showLLMSettings && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 12px', background: 'white', borderRadius: 6, border: '1px solid var(--border)' }}>
+                  <input
+                    type="checkbox"
+                    checked={useAITimeParsing}
+                    onChange={(e) => setUseAITimeParsing(e.target.checked)}
+                    style={{ width: 18, height: 18, cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: 13 }}>使用 AI 解析时间</span>
+                </label>
                 <select
                   value={llmProvider}
                   onChange={(e) => {
