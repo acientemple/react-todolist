@@ -572,7 +572,7 @@ function App() {
     let parsedDeadline: string | undefined
     let llmResult: string | null = null
 
-    // 如果开启了 AI 解析且配置了 LLM，只使用 AI 解析
+    // 如果开启了 AI 解析且配置了 LLM，优先使用 AI 解析
     if (useAITimeParsing && llmProvider && llmApiKey) {
       const result = await parseTimeWithLLM(text, {
         provider: llmProvider,
@@ -580,15 +580,22 @@ function App() {
         apiKey: llmApiKey,
         model: llmModel || ''
       })
-      if (result.success) {
-        // 直接使用 AI 返回的 deadline
-        if (result.deadline) {
-          parsedDeadline = result.deadline
+      if (result.success && result.deadline) {
+        // AI 解析成功且返回了 deadline
+        parsedDeadline = result.deadline
+        llmResult = 'AI解析'
+      } else if (result.success && result.timeText) {
+        // AI 返回了时间文本但没有 deadline，尝试解析
+        const { deadline } = parseTimeFromText(result.timeText)
+        if (deadline) {
+          parsedDeadline = deadline
           llmResult = 'AI解析'
         }
       }
-    } else {
-      // 没有开启 AI 解析时，使用原有规则
+    }
+
+    // 如果没有 AI 解析结果，使用默认规则
+    if (!parsedDeadline) {
       const { deadline } = parseTimeFromText(text)
       parsedDeadline = deadline
     }
