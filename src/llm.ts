@@ -5,6 +5,7 @@ export interface LLMConfig {
   apiKey: string
   endpoint?: string
   model: string
+  currentTime?: string  // 当前时间，用于相对时间计算
 }
 
 export interface LLMResponse {
@@ -129,6 +130,11 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
     return { success: false, error: '请先配置 API Key' }
   }
 
+  // 构建用户消息，包含当前时间
+  const userMessage = config.currentTime
+    ? `当前时间：${config.currentTime}\n\n用户输入：${text}`
+    : text
+
   try {
     let response: Response
 
@@ -144,7 +150,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
             model: config.model || 'gpt-4o-mini',
             messages: [
               { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: text }
+              { role: 'user', content: userMessage }
             ],
             temperature: 0.1
           })
@@ -164,7 +170,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
             model: config.model || 'claude-3-5-sonnet-latest',
             max_tokens: 1024,
             messages: [
-              { role: 'user', content: `系统提示：${SYSTEM_PROMPT}\n\n用户输入：${text}` }
+              { role: 'user', content: `系统提示：${SYSTEM_PROMPT}\n\n${userMessage}` }
             ]
           })
         })
@@ -176,7 +182,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{
-              parts: [{ text: `系统提示：${SYSTEM_PROMPT}\n\n用户输入：${text}` }]
+              parts: [{ text: `系统提示：${SYSTEM_PROMPT}\n\n${userMessage}` }]
             }],
             generationConfig: { temperature: 0.1 }
           })
@@ -194,7 +200,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
             model: config.model || 'deepseek-chat',
             messages: [
               { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: text }
+              { role: 'user', content: userMessage }
             ],
             temperature: 0.1
           })
@@ -212,7 +218,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
             model: config.model || 'abab6.5s-chat',
             messages: [
               { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: text }
+              { role: 'user', content: userMessage }
             ],
             temperature: 0.1
           })
@@ -230,7 +236,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
             model: config.model || 'moonshot-v1-8k',
             messages: [
               { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: text }
+              { role: 'user', content: userMessage }
             ],
             temperature: 0.1
           })
@@ -248,7 +254,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
             model: config.model || 'glm-4-flash',
             messages: [
               { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: text }
+              { role: 'user', content: userMessage }
             ],
             temperature: 0.1
           })
@@ -267,7 +273,7 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
             input: {
               messages: [
                 { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: text }
+                { role: 'user', content: userMessage }
               ]
             },
             parameters: { temperature: 0.1 }

@@ -578,11 +578,14 @@ function App() {
 
     // 如果开启了 AI 解析且配置了 LLM，让 AI 直接解析时间
     if (useAITimeParsing && llmProvider && llmApiKey) {
+      const now = new Date()
+      const currentTimeStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`
       const result = await parseTimeWithLLM(text, {
         provider: llmProvider,
         name: LLM_PROVIDERS.find(p => p.id === llmProvider)?.name || '',
         apiKey: llmApiKey,
-        model: llmModel || ''
+        model: llmModel || '',
+        currentTime: currentTimeStr
       })
       if (result.success && result.deadline) {
         parsedDeadline = result.deadline
