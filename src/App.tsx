@@ -382,6 +382,10 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+    // 同时保存到 Firebase
+    if (currentUser) {
+      FirebaseDB.saveTodos(currentUser, todos)
+    }
   }, [todos])
 
   useEffect(() => {
@@ -740,6 +744,9 @@ function App() {
             setLlmSaved(true)
           }
         }
+        // 加载用户的 todos
+        const userTodos = await FirebaseDB.loadTodos(authUsername)
+        setTodos(userTodos || [])
         setAuthUsername('')
         setAuthPassword('')
       } else {

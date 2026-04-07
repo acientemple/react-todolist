@@ -108,6 +108,17 @@ export const FirebaseDB = {
     }
   },
 
+  // 保存用户的 todos
+  async saveTodos(username: string, todos: any[]) {
+    await set(ref(database, TODO_PATH + 'todos/' + username), todos);
+  },
+
+  // 加载用户的 todos
+  async loadTodos(username: string) {
+    const snapshot = await get(ref(database, TODO_PATH + 'todos/' + username));
+    return snapshot.val() || [];
+  },
+
   // 创建密码重置请求
   async createResetRequest(username: string, email: string) {
     const request: ResetRequest = {
