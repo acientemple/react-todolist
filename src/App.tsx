@@ -1270,57 +1270,63 @@ function App() {
                   />
                   <span style={{ fontSize: 13 }}>使用 AI 解析时间</span>
                 </label>
-                <select
-                  value={llmProvider}
-                  onChange={(e) => {
-                    setLlmProvider(e.target.value)
-                    const provider = LLM_PROVIDERS.find(p => p.id === e.target.value)
-                    setLlmModel(provider?.models[0] || '')
-                  }}
-                  style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6, background: 'white' }}
-                >
-                  <option value="">选择 AI 模型</option>
-                  {LLM_PROVIDERS.map(p => (
-                    <option key={p.id} value={p.id}>{p.name} ({p.free})</option>
-                  ))}
-                </select>
-                {llmProvider && (
+                {!llmSaved ? (
                   <>
-                    <input
-                      type="text"
-                      placeholder="输入 API Key"
-                      value={llmApiKey}
-                      onChange={(e) => setLlmApiKey(e.target.value)}
-                      style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
-                    />
-                    {llmSaved && (
-                      <div style={{ fontSize: 13, color: 'var(--success)', padding: '8px 12px', background: '#e8f5e9', borderRadius: 6, textAlign: 'center' }}>
-                        已保存
-                      </div>
+                    <select
+                      value={llmProvider}
+                      onChange={(e) => {
+                        setLlmProvider(e.target.value)
+                        const provider = LLM_PROVIDERS.find(p => p.id === e.target.value)
+                        setLlmModel(provider?.models[0] || '')
+                      }}
+                      style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6, background: 'white' }}
+                    >
+                      <option value="">选择 AI 模型</option>
+                      {LLM_PROVIDERS.map(p => (
+                        <option key={p.id} value={p.id}>{p.name} ({p.free})</option>
+                      ))}
+                    </select>
+                    {llmProvider && (
+                      <>
+                        <input
+                          type="text"
+                          placeholder="输入 API Key"
+                          value={llmApiKey}
+                          onChange={(e) => setLlmApiKey(e.target.value)}
+                          style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
+                        />
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button className="test-btn" onClick={testLLM} disabled={llmTesting || !llmApiKey} style={{ flex: 1, opacity: llmTesting ? 0.7 : 1 }}>
+                            {llmTesting ? '测试中...' : '测试连接'}
+                          </button>
+                          <button className="test-btn" onClick={clearLLMConfig} disabled={llmTesting} style={{ flex: 1, background: '#9e9e9e', color: 'white' }}>
+                            清除
+                          </button>
+                        </div>
+                        {llmTesting && (
+                          <div style={{ fontSize: 12, color: 'var(--text-light)', padding: '4px 8px' }}>
+                            正在连接 AI 服务，请稍候...
+                          </div>
+                        )}
+                        {llmTestResult && (
+                          <div style={{ fontSize: 12, color: llmTestResult.includes('成功') ? 'var(--success)' : 'var(--danger)', padding: '4px 8px', background: llmTestResult.includes('成功') ? '#e8f5e9' : '#ffebee', borderRadius: 4 }}>
+                            {llmTestResult}
+                          </div>
+                        )}
+                      </>
                     )}
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="test-btn" onClick={testLLM} disabled={llmTesting || !llmApiKey || llmSaved} style={{ flex: 1, opacity: (llmTesting || llmSaved) ? 0.7 : 1 }}>
-                        {llmTesting ? '测试中...' : '测试连接'}
-                      </button>
-                      <button className="test-btn" onClick={clearLLMConfig} disabled={llmTesting} style={{ flex: 1, background: '#9e9e9e', color: 'white' }}>
-                        清除
-                      </button>
-                    </div>
-                    {llmTesting && (
-                      <div style={{ fontSize: 12, color: 'var(--text-light)', padding: '4px 8px' }}>
-                        正在连接 AI 服务，请稍候...
-                      </div>
-                    )}
-                    {llmTestResult && (
-                      <div style={{ fontSize: 12, color: llmTestResult.includes('成功') ? 'var(--success)' : 'var(--danger)', padding: '4px 8px', background: llmTestResult.includes('成功') ? '#e8f5e9' : '#ffebee', borderRadius: 4 }}>
-                        {llmTestResult}
-                      </div>
-                    )}
-                    <div style={{ fontSize: 11, color: 'var(--text-light)', padding: '8px', background: 'white', borderRadius: 6, lineHeight: 1.6 }}>
-                      配置 AI 模型后，输入事项时会自动解析时间。例如："明天下午三点开会" → 自动设置截止时间。
-                    </div>
                   </>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#e8f5e9', borderRadius: 6 }}>
+                    <span style={{ fontSize: 13, color: 'var(--success)' }}>已保存</span>
+                    <button className="test-btn" onClick={() => setLlmSaved(false)} style={{ padding: '4px 12px', fontSize: 12 }}>
+                      修改
+                    </button>
+                  </div>
                 )}
+                <div style={{ fontSize: 11, color: 'var(--text-light)', padding: '8px', background: 'white', borderRadius: 6, lineHeight: 1.6 }}>
+                  配置 AI 模型后，输入事项时会自动解析时间。例如："明天下午三点开会" → 自动设置截止时间。
+                </div>
               </div>
             )}
           </div>
