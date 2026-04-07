@@ -10,6 +10,7 @@ export interface LLMConfig {
 export interface LLMResponse {
   success: boolean
   timeText?: string
+  deadline?: string
   error?: string
 }
 
@@ -81,17 +82,25 @@ const SYSTEM_PROMPT = `你是一个时间解析助手。用户会输入一段话
 - 具体时间：上午9点、下午3点、11:05、11点5分、3点50
 - 组合：明天下午3点、下周星期一9点
 
+重要：根据上下文推断时间！
+- "看月亮"、"赏月"、"晚上看星星" → 推断为晚上20:00或21:00
+- "起床"、"吃早饭" → 推断为早上7:00或8:00
+- "吃午饭" → 推断为中午12:00
+- "吃晚饭" → 推断为晚上18:00或19:00
+- 如果提到具体时间则使用用户给的时间
+
 请分析用户输入，提取任务内容和时间。
 
 返回格式（必须是有效的JSON）：
 {
   "task": "任务内容（如果只有时间没有任务内容，则为空字符串）",
-  "time": "解析出的时间描述（如：明天上午9点，或下午3点50）",
+  "time": "解析出的时间描述（如：明天上午9点，或晚上20:00）",
   "deadline": "ISO格式日期时间（如：2026-04-05T15:50），只在能确定具体时间时才返回"
 }
 
 注意：
 - 如果用户没有提到具体时间，deadline 返回 null
+- deadline 必须根据上下文智能推断，如"看月亮"应该返回晚上20:00左右的时间
 - 只解析中文时间表达
 - task 应该只包含任务内容，不包含时间
 `
@@ -314,7 +323,8 @@ export async function parseTimeWithLLM(text: string, config: LLMConfig): Promise
         const result = JSON.parse(jsonMatch[0])
         return {
           success: true,
-          timeText: result.time || result.deadline || '',
+          timeText: result.time || '',
+          deadline: result.deadline || undefined,
         }
       }
       return { success: false, error: '无法解析时间信息' }

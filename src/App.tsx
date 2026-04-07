@@ -580,12 +580,18 @@ function App() {
         apiKey: llmApiKey,
         model: llmModel || ''
       })
-      if (result.success && result.timeText) {
-        // 用 AI 返回的时间文本再次解析
-        const { deadline } = parseTimeFromText(result.timeText)
-        if (deadline) {
-          parsedDeadline = deadline
-          llmResult = 'AI解析: ' + result.timeText
+      if (result.success) {
+        // 优先使用 AI 返回的 deadline
+        if (result.deadline) {
+          parsedDeadline = result.deadline
+          llmResult = 'AI解析'
+        } else if (result.timeText) {
+          // 用 AI 返回的时间文本再次解析
+          const { deadline } = parseTimeFromText(result.timeText)
+          if (deadline) {
+            parsedDeadline = deadline
+            llmResult = 'AI解析'
+          }
         }
       }
     }
