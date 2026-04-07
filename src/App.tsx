@@ -395,7 +395,7 @@ function App() {
   useEffect(() => {
     localStorage.setItem('use-ai-time-parsing', JSON.stringify(useAITimeParsing))
     // 同时保存到用户数据
-    if (currentUser && llmProvider && llmApiKey) {
+    if (currentUser) {
       FirebaseDB.updateUser(currentUser, { useAITimeParsing })
     }
   }, [useAITimeParsing])
@@ -868,6 +868,18 @@ function App() {
     }
   }
 
+  const saveLLMConfig = async () => {
+    if (!currentUser || !llmProvider || !llmApiKey) return
+    const provider = LLM_PROVIDERS.find(p => p.id === llmProvider)
+    await FirebaseDB.updateUser(currentUser, {
+      llmProvider,
+      llmApiKey,
+      llmModel: llmModel || provider?.models[0] || ''
+    })
+    setLlmSaved(true)
+    setLlmTestResult('配置已保存')
+  }
+
   const clearLLMConfig = async () => {
     if (!currentUser) return
     await FirebaseDB.updateUser(currentUser, {
@@ -1333,6 +1345,9 @@ function App() {
                         <div style={{ display: 'flex', gap: 8 }}>
                           <button className="test-btn" onClick={testLLM} disabled={llmTesting || !llmApiKey} style={{ flex: 1, opacity: llmTesting ? 0.7 : 1 }}>
                             {llmTesting ? '测试中...' : '测试连接'}
+                          </button>
+                          <button className="test-btn" onClick={saveLLMConfig} disabled={!llmProvider || !llmApiKey} style={{ flex: 1, background: '#4caf50', color: 'white' }}>
+                            保存
                           </button>
                           <button className="test-btn" onClick={clearLLMConfig} disabled={llmTesting} style={{ flex: 1, background: '#9e9e9e', color: 'white' }}>
                             清除
