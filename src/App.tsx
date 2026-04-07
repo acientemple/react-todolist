@@ -572,7 +572,7 @@ function App() {
     let parsedDeadline: string | undefined
     let llmResult: string | null = null
 
-    // 如果开启了 AI 解析且配置了 LLM，优先使用 AI 解析
+    // 如果开启了 AI 解析且配置了 LLM，只使用 AI 解析
     if (useAITimeParsing && llmProvider && llmApiKey) {
       const result = await parseTimeWithLLM(text, {
         provider: llmProvider,
@@ -581,23 +581,14 @@ function App() {
         model: llmModel || ''
       })
       if (result.success) {
-        // 优先使用 AI 返回的 deadline
+        // 直接使用 AI 返回的 deadline
         if (result.deadline) {
           parsedDeadline = result.deadline
           llmResult = 'AI解析'
-        } else if (result.timeText) {
-          // 用 AI 返回的时间文本再次解析
-          const { deadline } = parseTimeFromText(result.timeText)
-          if (deadline) {
-            parsedDeadline = deadline
-            llmResult = 'AI解析'
-          }
         }
       }
-    }
-
-    // 如果没有使用 AI 解析或 AI 没有解析成功，使用原有规则
-    if (!parsedDeadline) {
+    } else {
+      // 没有开启 AI 解析时，使用原有规则
       const { deadline } = parseTimeFromText(text)
       parsedDeadline = deadline
     }
@@ -1287,13 +1278,22 @@ function App() {
                       }}
                       style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6, background: 'white' }}
                     >
-                      <option value="">选择 AI 模型</option>
+                      <option value="">选择 AI 提供商</option>
                       {LLM_PROVIDERS.map(p => (
                         <option key={p.id} value={p.id}>{p.name} ({p.free})</option>
                       ))}
                     </select>
                     {llmProvider && (
                       <>
+                        <select
+                          value={llmModel}
+                          onChange={(e) => setLlmModel(e.target.value)}
+                          style={{ padding: '10px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6, background: 'white' }}
+                        >
+                          {(LLM_PROVIDERS.find(p => p.id === llmProvider)?.models || []).map(m => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
                         <input
                           type="text"
                           placeholder="输入 API Key"
