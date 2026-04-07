@@ -394,6 +394,10 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('use-ai-time-parsing', JSON.stringify(useAITimeParsing))
+    // 同时保存到用户数据
+    if (currentUser && llmProvider && llmApiKey) {
+      FirebaseDB.updateUser(currentUser, { useAITimeParsing })
+    }
   }, [useAITimeParsing])
 
   useEffect(() => {
@@ -709,6 +713,10 @@ function App() {
           setLlmProvider(userData.llmProvider || '')
           setLlmApiKey(userData.llmApiKey || '')
           setLlmModel(userData.llmModel || '')
+          setUseAITimeParsing(!!userData.useAITimeParsing)
+          if (userData.llmApiKey) {
+            setLlmSaved(true)
+          }
         }
         setAuthUsername('')
         setAuthPassword('')

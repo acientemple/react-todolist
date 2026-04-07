@@ -36,6 +36,7 @@ export interface User {
   llmProvider?: string;   // AI 模型提供商
   llmApiKey?: string;     // AI API Key
   llmModel?: string;      // AI 模型名称
+  useAITimeParsing?: boolean; // 是否使用 AI 时间解析
 }
 
 // 密码重置请求接口
