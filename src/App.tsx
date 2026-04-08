@@ -4,10 +4,10 @@ import type { User } from './firebase'
 import emailjs from '@emailjs/browser'
 import { LLM_PROVIDERS, parseTimeWithLLM } from './llm'
 
-// EmailJS 配置
-const EMAILJS_SERVICE_ID = 'service_mm0l2m5'
-const EMAILJS_TEMPLATE_ID = 'template_vmv2xvo'
-const EMAILJS_PUBLIC_KEY = 'LsNvV4SDNGLYE7PuD'
+// EmailJS 配置 - 从环境变量读取
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_mm0l2m5'
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_vmv2xvo'
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'LsNvV4SDNGLYE7PuD'
 
 interface Todo {
   id: number
