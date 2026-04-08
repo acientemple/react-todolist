@@ -62,8 +62,13 @@ export const FirebaseDB = {
 
   // 读取用户
   async getUser(username: string) {
-    const snapshot = await get(ref(database, TODO_PATH + 'users/' + username));
-    return snapshot.val();
+    try {
+      const snapshot = await get(ref(database, TODO_PATH + 'users/' + username));
+      return snapshot.val();
+    } catch (error) {
+      console.error('读取用户失败:', error);
+      return null;
+    }
   },
 
   // 读取所有用户
