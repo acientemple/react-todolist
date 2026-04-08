@@ -84,10 +84,10 @@ export const FirebaseDB = {
     return snapshot.val() || {};
   },
 
-  // 检查用户名是否存在
+  // 检查用户名是否存在（只检查 todolist 路径，不检查旧路径避免冲突）
   async userExists(username: string) {
-    const user = await this.getUser(username);
-    return !!user;
+    const snapshot = await get(ref(database, TODO_PATH + 'users/' + username));
+    return !!snapshot.val();
   },
 
   // 删除用户
