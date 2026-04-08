@@ -382,11 +382,13 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-    // 同时保存到 Firebase
+    // 同时保存到 Firebase（登出时 currentUser 为 null，不保存）
     if (currentUser) {
-      FirebaseDB.saveTodos(currentUser, todos)
+      FirebaseDB.saveTodos(currentUser, todos).catch(err => {
+        console.error('保存 todos 到 Firebase 失败:', err)
+      })
     }
-  }, [todos])
+  }, [todos, currentUser])
 
   useEffect(() => {
     localStorage.setItem('notify-enabled', JSON.stringify(notifyEnabled))
