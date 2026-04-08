@@ -60,15 +60,22 @@ export const FirebaseDB = {
     await set(ref(database, TODO_PATH + 'users/' + username), userData);
   },
 
-  // 读取用户
+  // 读取用户（兼容新旧路径）
   async getUser(username: string) {
-    try {
-      const snapshot = await get(ref(database, TODO_PATH + 'users/' + username));
-      return snapshot.val();
-    } catch (error) {
-      console.error('读取用户失败:', error);
-      return null;
+    // 先检查 todolist/users/ 路径
+    let snapshot = await get(ref(database, TODO_PATH + 'users/' + username));
+    if (snapshot.val()) return snapshot.val();
+
+    // 兼容：检查根路径 users/（snake-game 旧数据）
+    snapshot = await get(ref(database, 'users/' + username));
+    if (snapshot.val()) {
+      // 找到旧数据，迁移到新路径
+      const userData = snapshot.val();
+      await this.saveUser(username, userData);
+      return userData;
     }
+
+    return null;
   },
 
   // 读取所有用户
