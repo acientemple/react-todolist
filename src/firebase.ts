@@ -129,7 +129,7 @@ export const FirebaseDB = {
   async saveTodos(username: string, todos: any[]) {
     const path = TODO_PATH + 'todos/' + username;
     console.log('[Firebase] 保存路径:', path, '数据:', todos);
-    console.log('[Firebase] databaseURL:', database.app.options_.databaseURL);
+    console.log('[Firebase] databaseURL:', database.app.options.databaseURL);
     try {
       await set(ref(database, path), todos);
       console.log('[Firebase] 保存成功');
@@ -143,7 +143,7 @@ export const FirebaseDB = {
   async loadTodos(username: string) {
     const path = TODO_PATH + 'todos/' + username;
     console.log('[Firebase] 加载路径:', path);
-    console.log('[Firebase] databaseURL:', database.app.options_.databaseURL);
+    console.log('[Firebase] databaseURL:', database.app.options.databaseURL);
     try {
       const snapshot = await get(ref(database, TODO_PATH + 'todos/' + username));
       const data = snapshot.val() || [];
