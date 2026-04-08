@@ -3,8 +3,13 @@ import { getDatabase, ref, set, get, push, remove, onValue, off } from 'firebase
 
 // Firebase 配置
 const firebaseConfig = {
-  projectId: 'snake-game-6e39e',
-  databaseURL: 'https://snake-game-6e39e-default-rtdb.asia-southeast1.firebasedatabase.app/'
+  apiKey: "AIzaSyA7iZFc-PwwePXwuJqZgG8RqRqR95wsofg",
+  authDomain: "snake-game-6e39e.firebaseapp.com",
+  databaseURL: "https://snake-game-6e39e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "snake-game-6e39e",
+  storageBucket: "snake-game-6e39e.appspot.com",
+  messagingSenderId: "703506618799",
+  appId: "1:703506618799:web:b78d31c1ae570d3b5c375a"
 };
 
 // 初始化 Firebase
