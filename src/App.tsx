@@ -382,8 +382,8 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-    // 同时保存到 Firebase（登出时 currentUser 为 null，不保存）
-    if (currentUser) {
+    // 同时保存到 Firebase（登出时不清空，避免 useEffect 触发保存空数组）
+    if (currentUser && todos.length > 0) {
       FirebaseDB.saveTodos(currentUser, todos).catch(err => {
         console.error('保存 todos 到 Firebase 失败:', err)
       })
