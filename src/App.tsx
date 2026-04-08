@@ -856,7 +856,15 @@ function App() {
     setCurrentUser(null)
     setUserWebhook('')
     setTodos([])
-    localStorage.removeItem(STORAGE_KEY)
+    // 清除所有本地缓存
+    localStorage.removeItem('react-todos')
+    localStorage.removeItem('todo-todos')
+    localStorage.removeItem('todo-current-user')
+    localStorage.removeItem('todo-admin')
+    localStorage.removeItem('notify-enabled')
+    localStorage.removeItem('notify-minutes')
+    localStorage.removeItem('deleted-todos')
+    localStorage.removeItem('show-trash')
   }
 
   const saveWebhook = async () => {
