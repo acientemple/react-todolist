@@ -881,7 +881,8 @@ function App() {
     await FirebaseDB.updateUser(currentUser, {
       llmProvider,
       llmApiKey,
-      llmModel: llmModel || provider?.models[0] || ''
+      llmModel: llmModel || provider?.models[0] || '',
+      useAITimeParsing
     })
     setLlmSaved(true)
     setLlmTestResult('配置已保存')
