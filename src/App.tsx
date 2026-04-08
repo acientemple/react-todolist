@@ -1087,7 +1087,7 @@ function App() {
         )}
 
         {/* 管理员面板 */}
-        {isLoggedIn && isAdmin && (
+        {isLoggedIn && isAdmin && showAdminPanel && (
           <div className="admin-panel">
             <h3>用户管理</h3>
             <ul className="user-list">
