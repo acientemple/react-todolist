@@ -610,11 +610,16 @@ function App() {
           completed: false,
           deadline: item.deadline || undefined
         }))
-        setTodos([...todos, ...newTodos])
+        const updatedTodos = [...todos, ...newTodos]
+        setTodos(updatedTodos)
         setInputValue('')
         setDeadlineValue('')
         setParsedTime(`AI解析: 添加了${newTodos.length}个任务`)
         setTimeout(() => setParsedTime(''), 3000)
+        // 直接保存到 Firebase
+        if (currentUser) {
+          await FirebaseDB.saveTodos(currentUser, updatedTodos)
+        }
         return
       }
 
@@ -631,12 +636,14 @@ function App() {
       parsedDeadline = deadline
     }
 
-    setTodos([...todos, {
+    const newTodo = {
       id: Date.now(),
       text,
       completed: false,
       deadline: parsedDeadline || deadlineValue || undefined
-    }])
+    }
+    const updatedTodos = [...todos, newTodo]
+    setTodos(updatedTodos)
     setInputValue('')
     setDeadlineValue('')
     if (llmResult) {
@@ -648,29 +655,45 @@ function App() {
     } else {
       setParsedTime('')
     }
+    // 直接保存到 Firebase
+    if (currentUser) {
+      await FirebaseDB.saveTodos(currentUser, updatedTodos)
+    }
   }
 
-  const toggleTodo = (id: number) => {
-    setTodos(todos.map(todo =>
+  const toggleTodo = async (id: number) => {
+    const updatedTodos = todos.map(todo =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    ))
+    )
+    setTodos(updatedTodos)
+    if (currentUser) {
+      await FirebaseDB.saveTodos(currentUser, updatedTodos)
+    }
   }
 
-  const deleteTodo = (id: number) => {
+  const deleteTodo = async (id: number) => {
     const todo = todos.find(t => t.id === id)
     if (todo) {
       setDeletedTodos([...deletedTodos, { ...todo, deletedAt: Date.now() }])
     }
-    setTodos(todos.filter(todo => todo.id !== id))
+    const updatedTodos = todos.filter(todo => todo.id !== id)
+    setTodos(updatedTodos)
     notifiedIds.current.delete(id)
+    if (currentUser) {
+      await FirebaseDB.saveTodos(currentUser, updatedTodos)
+    }
   }
 
-  const restoreTodo = (id: number) => {
+  const restoreTodo = async (id: number) => {
     const todo = deletedTodos.find(t => t.id === id)
     if (todo) {
       const { deletedAt, ...rest } = todo
-      setTodos([...todos, rest as Todo])
+      const updatedTodos = [...todos, rest as Todo]
+      setTodos(updatedTodos)
       setDeletedTodos(deletedTodos.filter(t => t.id !== id))
+      if (currentUser) {
+        await FirebaseDB.saveTodos(currentUser, updatedTodos)
+      }
     }
   }
 
@@ -682,8 +705,12 @@ function App() {
     setDeletedTodos([])
   }
 
-  const clearCompleted = () => {
-    setTodos(todos.filter(todo => !todo.completed))
+  const clearCompleted = async () => {
+    const updatedTodos = todos.filter(todo => !todo.completed)
+    setTodos(updatedTodos)
+    if (currentUser) {
+      await FirebaseDB.saveTodos(currentUser, updatedTodos)
+    }
   }
 
   const hasCompleted = todos.some(todo => todo.completed)
