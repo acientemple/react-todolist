@@ -859,7 +859,11 @@ function App() {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // 先保存当前 todos 到服务器
+    if (currentUser && todos.length > 0) {
+      await FirebaseDB.saveTodos(currentUser, todos)
+    }
     AuthService.logout()
     setIsLoggedIn(false)
     setIsAdmin(false)

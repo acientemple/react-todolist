@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set, get, push, remove, onValue, off } from 'firebase/database';
 
-// Firebase 配置
+// Firebase 配置 - snake-game-6e39e 项目
 const firebaseConfig = {
   apiKey: "AIzaSyA7iZFc-PwwePXwuJqZgG8RqRqR95wsofg",
   authDomain: "snake-game-6e39e.firebaseapp.com",
@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:703506618799:web:b78d31c1ae570d3b5c375a"
 };
 
-// 初始化 Firebase
+// 获取或初始化 Firebase 应用
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
