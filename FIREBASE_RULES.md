@@ -15,7 +15,7 @@
     "todolist": {
       "users": {
         "$username": {
-          ".read": "$username === auth.uid || !auth",
+          ".read": true,
           ".write": "$username === auth.uid"
         }
       },
