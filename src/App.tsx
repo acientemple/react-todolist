@@ -583,8 +583,13 @@ function App() {
   }, [todos, notifyEnabled])
 
   const addTodo = async () => {
+    console.log('[DEBUG] addTodo called, currentUser:', currentUser, 'inputValue:', inputValue);
     const text = inputValue.trim()
-    if (!text) return
+    if (!text) {
+      console.log('[DEBUG] text is empty, returning');
+      return
+    }
+    console.log('[DEBUG] proceeding with addTodo');
 
     let parsedDeadline: string | undefined
     let llmResult: string | null = null
@@ -656,8 +661,13 @@ function App() {
       setParsedTime('')
     }
     // 直接保存到 Firebase
+    console.log('[DEBUG] about to save, currentUser:', currentUser, 'updatedTodos:', updatedTodos);
     if (currentUser) {
+      console.log('[DEBUG] calling saveTodos');
       await FirebaseDB.saveTodos(currentUser, updatedTodos)
+      console.log('[DEBUG] saveTodos completed');
+    } else {
+      console.log('[DEBUG] currentUser is null, not saving');
     }
   }
 
