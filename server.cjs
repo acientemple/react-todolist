@@ -112,13 +112,14 @@ async function checkAllDeadlines() {
 
       if (!userData || !userData.wechatWebhook) continue;
 
-      // 从 webhook URL 中提取 key
+      // 从 webhook URL 中提取 key（兼容两种格式）
       let webhookKey = '';
       try {
         const url = new URL(userData.wechatWebhook);
         webhookKey = url.searchParams.get('key') || '';
       } catch {
-        continue;
+        // 如果不是有效 URL，直接当作 key 使用
+        webhookKey = userData.wechatWebhook;
       }
 
       if (!webhookKey) continue;
