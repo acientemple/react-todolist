@@ -374,6 +374,7 @@ function App() {
   const [llmTesting, setLlmTesting] = useState(false)
   const [llmTestResult, setLlmTestResult] = useState('')
   const [llmSaved, setLlmSaved] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   // 是否使用AI时间解析
   const [useAITimeParsing, setUseAITimeParsing] = useState(() => {
     const saved = localStorage.getItem('use-ai-time-parsing')
@@ -382,13 +383,14 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-    // 同时保存到 Firebase（登出时不清空，避免 useEffect 触发保存空数组）
-    if (currentUser && todos.length > 0) {
-      FirebaseDB.saveTodos(currentUser, todos).catch(err => {
-        console.error('保存 todos 到 Firebase 失败:', err)
-      })
+    // 登出时跳过 Firebase 保存，避免保存空数组
+    if (isLoggingOut || !currentUser || todos.length === 0) {
+      return
     }
-  }, [todos, currentUser])
+    FirebaseDB.saveTodos(currentUser, todos).catch(err => {
+      console.error('保存 todos 到 Firebase 失败:', err)
+    })
+  }, [todos, currentUser, isLoggingOut])
 
   useEffect(() => {
     localStorage.setItem('notify-enabled', JSON.stringify(notifyEnabled))
@@ -860,6 +862,8 @@ function App() {
   }
 
   const handleLogout = async () => {
+    // 标记为登出状态，阻止 useEffect 保存空数据
+    setIsLoggingOut(true)
     // 先保存当前 todos 到服务器
     if (currentUser && todos.length > 0) {
       await FirebaseDB.saveTodos(currentUser, todos)
@@ -879,6 +883,7 @@ function App() {
     localStorage.removeItem('notify-minutes')
     localStorage.removeItem('deleted-todos')
     localStorage.removeItem('show-trash')
+    setIsLoggingOut(false)
   }
 
   const saveWebhook = async () => {
