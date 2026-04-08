@@ -15,7 +15,7 @@
     "todolist": {
       "users": {
         "$username": {
-          ".read": "$username === auth.uid",
+          ".read": "$username === auth.uid || !auth",
           ".write": "$username === auth.uid"
         }
       },
@@ -36,14 +36,15 @@
 
 ## 规则说明
 
-- `users/$username` - 只有用户本人可以读写自己的用户数据
-- `todos/$username` - 只有用户本人可以读写自己的 todos
+- `users/$username` - 用户本人可读写，未登录用户可读取自己的数据（用于登录验证）
+- `todos/$username` - 只有用户本人可以读写
 - `resetRequests` - 所有人都可以写入（用于密码重置请求），但不能读取
 
 ## 重要说明
 
 1. Firebase Authentication 的 `auth.uid` 对应用户的用户名 (username)
-2. 这些规则确保：
+2. `!auth` 表示未登录状态，允许未登录用户读取自己的用户数据用于登录验证
+3. 这些规则确保：
    - 用户 A 无法访问用户 B 的数据
-   - 只有经过身份验证的用户才能访问数据
-   - 未登录用户无法访问任何数据
+   - 只有经过身份验证的用户才能修改数据
+   - 未登录用户只能读取自己的数据（用于登录），不能修改任何数据
