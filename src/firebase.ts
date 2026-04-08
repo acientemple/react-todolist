@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getDatabase, ref, set, get, push, remove, onValue, off } from 'firebase/database';
 
 // Firebase 配置 - snake-game-6e39e 项目
@@ -13,7 +13,7 @@ const firebaseConfig = {
 };
 
 // 获取或初始化 Firebase 应用
-const app = initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
 // 数据路径前缀 - todolist 专用
