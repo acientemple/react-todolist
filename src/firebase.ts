@@ -122,13 +122,28 @@ export const FirebaseDB = {
 
   // 保存用户的 todos
   async saveTodos(username: string, todos: any[]) {
-    await set(ref(database, TODO_PATH + 'todos/' + username), todos);
+    console.log('[Firebase] 保存 todos:', username, todos);
+    try {
+      await set(ref(database, TODO_PATH + 'todos/' + username), todos);
+      console.log('[Firebase] 保存成功');
+    } catch (error) {
+      console.error('[Firebase] 保存失败:', error);
+      throw error;
+    }
   },
 
   // 加载用户的 todos
   async loadTodos(username: string) {
-    const snapshot = await get(ref(database, TODO_PATH + 'todos/' + username));
-    return snapshot.val() || [];
+    console.log('[Firebase] 加载 todos:', username);
+    try {
+      const snapshot = await get(ref(database, TODO_PATH + 'todos/' + username));
+      const data = snapshot.val() || [];
+      console.log('[Firebase] 加载成功:', data);
+      return data;
+    } catch (error) {
+      console.error('[Firebase] 加载失败:', error);
+      return [];
+    }
   },
 
   // 创建密码重置请求
