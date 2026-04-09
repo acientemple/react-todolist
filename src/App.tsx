@@ -739,11 +739,9 @@ function App() {
     const weekday = weekdays[date.getDay()]
     const month = date.getMonth() + 1
     const day = date.getDate()
-    const hours = date.getHours()
+    const hours = date.getHours().toString().padStart(2, '0')
     const minutes = date.getMinutes().toString().padStart(2, '0')
-    const ampm = hours < 12 ? '上午' : '下午'
-    const displayHours = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours)
-    const dateStr = `${weekday}${month}月${day}日 ${ampm}${displayHours.toString().padStart(2, '0')}:${minutes}`
+    const dateStr = `${weekday}${month}月${day}日 ${hours}:${minutes}`
 
     return { dateStr, isOverdue }
   }
