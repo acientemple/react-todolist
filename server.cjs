@@ -142,6 +142,7 @@ async function checkAllDeadlines() {
     }
 
     const allTodos = snapshot.val();
+    console.log('[DEBUG] Firebase 数据:', JSON.stringify(allTodos, null, 2));
     const now = getNowInTimezone().getTime();  // 使用中国时区的当前时间
     let sentCount = 0;
 
@@ -175,6 +176,7 @@ async function checkAllDeadlines() {
 
         // 每任务独立的通知时间，否则使用全局默认（默认2小时）
         const notifyMinutes = todo.notifyMinutes ?? userData.notifyMinutes ?? 120;
+        console.log(`[DEBUG] 任务: ${todo.text}, notifyMinutes: ${todo.notifyMinutes}, userData.notifyMinutes: ${userData.notifyMinutes}, 使用值: ${notifyMinutes}`);
         const notifyWindow = notifyMinutes * 60 * 1000;
 
         const deadlineTime = getDeadlineTimestampInTimezone(todo.deadline);
