@@ -168,14 +168,14 @@ async function checkAllDeadlines() {
 
       if (!webhookKey) continue;
 
-      // 获取用户的全局通知提前时间（默认2小时）
-      const notifyMinutes = userData.notifyMinutes || 120;
-      const notifyWindow = notifyMinutes * 60 * 1000;
-
       // 遍历该用户的待办事项
       for (let i = 0; i < todos.length; i++) {
         const todo = todos[i];
         if (!todo.deadline || todo.completed || todo.notified) continue;
+
+        // 每任务独立的通知时间，否则使用全局默认（默认2小时）
+        const notifyMinutes = todo.notifyMinutes ?? userData.notifyMinutes ?? 120;
+        const notifyWindow = notifyMinutes * 60 * 1000;
 
         const deadlineTime = getDeadlineTimestampInTimezone(todo.deadline);
         const timeDiff = deadlineTime - now;
