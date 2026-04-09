@@ -400,7 +400,11 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('notify-minutes', JSON.stringify(notifyMinutes))
-  }, [notifyMinutes])
+    // 同步到 Firebase
+    if (currentUser) {
+      FirebaseDB.updateUser(currentUser, { notifyMinutes })
+    }
+  }, [notifyMinutes, currentUser])
 
   useEffect(() => {
     localStorage.setItem('use-ai-time-parsing', JSON.stringify(useAITimeParsing))
@@ -807,6 +811,11 @@ function App() {
           setUseAITimeParsing(!!userData.useAITimeParsing)
           if (userData.llmApiKey) {
             setLlmSaved(true)
+          }
+          // 加载通知提前时间
+          if (userData.notifyMinutes) {
+            setNotifyMinutes(userData.notifyMinutes)
+            localStorage.setItem('notify-minutes', JSON.stringify(userData.notifyMinutes))
           }
         }
         // 加载用户的 todos
