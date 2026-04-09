@@ -346,8 +346,9 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(AuthService.isAdmin())
   const [currentUser, setCurrentUser] = useState(AuthService.getCurrentUser())
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot' | 'verify'>('login')
-  const [authUsername, setAuthUsername] = useState('')
-  const [authPassword, setAuthPassword] = useState('')
+  const [authUsername, setAuthUsername] = useState(() => localStorage.getItem('saved-username') || '')
+  const [authPassword, setAuthPassword] = useState(() => localStorage.getItem('saved-password') || '')
+  const [rememberPassword, setRememberPassword] = useState(() => !!localStorage.getItem('saved-username'))
   const [authEmail, setAuthEmail] = useState('')
   const [authMessage, setAuthMessage] = useState('')
   const [showAdminPanel, setShowAdminPanel] = useState(false)
@@ -815,6 +816,14 @@ function App() {
         // 加载用户的回收站
         const userDeletedTodos = await FirebaseDB.loadDeletedTodos(authUsername)
         setDeletedTodos(userDeletedTodos || [])
+        // 记住密码
+        if (rememberPassword) {
+          localStorage.setItem('saved-username', authUsername)
+          localStorage.setItem('saved-password', authPassword)
+        } else {
+          localStorage.removeItem('saved-username')
+          localStorage.removeItem('saved-password')
+        }
         setAuthUsername('')
         setAuthPassword('')
       } else {
@@ -1103,13 +1112,23 @@ function App() {
                 />
               )}
               {authMode === 'login' && (
-                <input
-                  type="password"
-                  placeholder="密码"
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  required
-                />
+                <>
+                  <input
+                    type="password"
+                    placeholder="密码"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    required
+                  />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={rememberPassword}
+                      onChange={(e) => setRememberPassword(e.target.checked)}
+                    />
+                    记住密码
+                  </label>
+                </>
               )}
               {authMode === 'register' && (
                 <>
