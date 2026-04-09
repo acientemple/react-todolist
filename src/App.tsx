@@ -1328,7 +1328,7 @@ function App() {
             />
             <span>分钟发送企业微信通知</span>
           </label>
-          <button className="test-btn" onClick={testNotification}>测试</button>
+          <button className="test-btn" onClick={testNotification} title="点击发送测试通知到企业微信">测试</button>
           {notifyStatus && <span className="notify-status">{notifyStatus}</span>}
         </div>
 
