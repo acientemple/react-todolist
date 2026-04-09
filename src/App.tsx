@@ -1333,46 +1333,46 @@ function App() {
           </div>
         )}
 
-        {isLoggedIn && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button className="test-btn" onClick={testNotification} title="点击发送测试通知到企业微信">测试</button>
-            {notifyStatus && <span className="notify-status">{notifyStatus}</span>}
-          </div>
-        )}
-
         {/* 企业微信 Webhook 设置 */}
         {isLoggedIn && (
           <div className="webhook-section" style={{ marginBottom: 16, padding: '12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 13, color: 'var(--text-light)' }}>Webhook:</span>
               {webhookSaved ? (
-                <span style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 13, color: 'var(--success)', background: '#ecfdf5', borderRadius: 6 }}>
-                  已保存
-                </span>
+                <>
+                  <span style={{ padding: '6px 10px', fontSize: 13, color: 'var(--success)', background: '#ecfdf5', borderRadius: 6 }}>
+                    已保存
+                  </span>
+                  <button className="test-btn" onClick={testNotification} title="点击发送测试通知到企业微信">测试</button>
+                  {notifyStatus && <span className="notify-status">{notifyStatus}</span>}
+                  <button
+                    className="test-btn"
+                    onClick={() => {
+                      setUserWebhook('')
+                      setWebhookSaved(false)
+                    }}
+                    style={{ background: 'var(--primary)' }}
+                  >
+                    设置
+                  </button>
+                </>
               ) : (
-                <input
-                  type="text"
-                  placeholder="输入企业微信群机器人的 webhook URL"
-                  value={userWebhook}
-                  onChange={(e) => setUserWebhook(e.target.value)}
-                  style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
-                />
+                <>
+                  <input
+                    type="text"
+                    placeholder="输入企业微信群机器人的 webhook URL"
+                    value={userWebhook}
+                    onChange={(e) => setUserWebhook(e.target.value)}
+                    style={{ flex: 1, minWidth: 200, padding: '6px 10px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
+                  />
+                  <button
+                    className="test-btn"
+                    onClick={saveWebhook}
+                  >
+                    保存
+                  </button>
+                </>
               )}
-              <button
-                className="test-btn"
-                onClick={() => {
-                  if (webhookSaved) {
-                    // 点击设置：清空并显示输入框
-                    setUserWebhook('')
-                    setWebhookSaved(false)
-                  } else {
-                    saveWebhook()
-                  }
-                }}
-                style={{ background: webhookSaved ? 'var(--primary)' : undefined }}
-              >
-                {webhookSaved ? '设置' : '保存'}
-              </button>
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 6 }}>
               保存后将使用您自己的企业微信机器人接收通知
