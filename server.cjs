@@ -170,18 +170,22 @@ async function checkAllDeadlines() {
 app.post('/api/notify', async (req, res) => {
   const { text, deadline, webhook } = req.body;
 
-  let webhookKey = DEFAULT_WEBHOOK_KEY;
-  if (webhook) {
-    try {
-      const url = new URL(webhook);
-      webhookKey = url.searchParams.get('key') || DEFAULT_WEBHOOK_KEY;
-    } catch {
-      // 无效的 URL
-    }
+  // 必须提供有效的 webhook，不使用默认 fallback
+  if (!webhook) {
+    res.status(400).json({ success: false, message: '未配置企业微信 webhook' });
+    return;
   }
 
-  if (!webhookKey) {
-    res.status(400).json({ success: false, message: '未配置企业微信 webhook' });
+  let webhookKey;
+  try {
+    const url = new URL(webhook);
+    webhookKey = url.searchParams.get('key');
+    if (!webhookKey) {
+      res.status(400).json({ success: false, message: '无效的 webhook URL' });
+      return;
+    }
+  } catch {
+    res.status(400).json({ success: false, message: '无效的 webhook URL' });
     return;
   }
 
