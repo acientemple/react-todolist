@@ -584,7 +584,7 @@ function App() {
   }, [todos, notifyMinutes, userWebhook])
 
   const addTodo = async () => {
-    console.log('[DEBUG] addTodo called, currentUser:', currentUser, 'inputValue:', inputValue);
+    console.log('[DEBUG] addTodo called, currentUser:', currentUser, 'inputValue:', inputValue, 'taskNotifyMinutes:', taskNotifyMinutes);
     const text = inputValue.trim()
     if (!text) {
       console.log('[DEBUG] text is empty, returning');
@@ -650,7 +650,9 @@ function App() {
       deadline: parsedDeadline || deadlineValue || undefined,
       notifyMinutes: taskNotifyMinutes // 每任务独立的通知提前时间
     }
+    console.log('[DEBUG] newTodo created, taskNotifyMinutes:', taskNotifyMinutes, 'newTodo:', JSON.stringify(newTodo));
     const updatedTodos = [...todos, newTodo]
+    console.log('[DEBUG] updatedTodos to save:', JSON.stringify(updatedTodos));
     setTodos(updatedTodos)
     setInputValue('')
     setDeadlineValue('')
