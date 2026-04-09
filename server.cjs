@@ -118,15 +118,13 @@ function formatDeadline(isoString) {
 
 // 获取截止时间在中国时区的时间戳
 // 注意：Firebase 存储的 deadline 是北京时间（如 "2026-04-09T11:30" = 北京11:30）
-// new Date() 会将其解析为 UTC 时间，我们需要手动解析为北京时间
+// new Date() 会将其解析为 UTC 时间，我们实际要的是北京时间
+// UTC 11:30 = 北京时间 19:30，所以要减去8小时才是正确的北京时间
 function getDeadlineTimestampInTimezone(isoString) {
-  // 直接解析日期字符串，构造为中国时区的 Date 对象
-  // 格式：2026-04-09T11:30 (这被 new Date() 解析为 UTC 11:30，需要加8小时偏移)
   const date = new Date(isoString);
-
-  // UTC 时间 + 8小时偏移 = 北京时间
   const chinaOffset = 8 * 60 * 60 * 1000; // 8小时毫秒数
-  return date.getTime() + chinaOffset;
+  // 减去8小时偏移，将UTC 11:30转换为北京时间 11:30
+  return date.getTime() - chinaOffset;
 }
 
 // 检查所有用户的待办事项并发送通知
