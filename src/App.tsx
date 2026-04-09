@@ -1124,6 +1124,7 @@ function App() {
                   value={authUsername}
                   onChange={(e) => setAuthUsername(e.target.value)}
                   required
+                  autoComplete="username"
                 />
               )}
               {authMode === 'login' && (
@@ -1134,6 +1135,7 @@ function App() {
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
                     required
+                    autoComplete="current-password"
                   />
                   <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
                     <input
