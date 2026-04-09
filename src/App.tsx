@@ -319,16 +319,10 @@ function App() {
   const [interimText, setInterimText] = useState('')
   const [deadlineValue, setDeadlineValue] = useState('')
   const [taskNotifyMinutes, setTaskNotifyMinutes] = useState<number | undefined>(undefined) // 每任务独立的提前通知分钟
-  const [notifyEnabled, setNotifyEnabled] = useState(() => {
-    const saved = localStorage.getItem('notify-enabled')
-    return saved ? JSON.parse(saved) : true
-  })
-  const [notifyMinutes, setNotifyMinutes] = useState(() => {
+  const [notifyMinutes] = useState(() => {
     const saved = localStorage.getItem('notify-minutes')
     return saved ? JSON.parse(saved) : 120
   })
-  const notifyHours = Math.floor(notifyMinutes / 60)
-  const notifyMins = notifyMinutes % 60
   const [deletedTodos, setDeletedTodos] = useState<Todo[]>(() => {
     const saved = localStorage.getItem(DELETED_KEY)
     return saved ? JSON.parse(saved) : []
@@ -397,16 +391,8 @@ function App() {
   }, [todos, currentUser, isLoggingOut])
 
   useEffect(() => {
-    localStorage.setItem('notify-enabled', JSON.stringify(notifyEnabled))
-  }, [notifyEnabled])
-
-  useEffect(() => {
     localStorage.setItem('notify-minutes', JSON.stringify(notifyMinutes))
-    // 同步到 Firebase
-    if (currentUser) {
-      FirebaseDB.updateUser(currentUser, { notifyMinutes })
-    }
-  }, [notifyMinutes, currentUser])
+  }, [notifyMinutes])
 
   useEffect(() => {
     localStorage.setItem('use-ai-time-parsing', JSON.stringify(useAITimeParsing))
@@ -550,8 +536,6 @@ function App() {
   }
 
   useEffect(() => {
-    if (!notifyEnabled) return
-
     const checkDeadlines = async () => {
       const now = new Date().getTime()
       const notifyWindow = notifyMinutes * 60 * 1000
@@ -597,7 +581,7 @@ function App() {
     checkDeadlines()
     const interval = setInterval(checkDeadlines, 60000)
     return () => clearInterval(interval)
-  }, [todos, notifyEnabled])
+  }, [todos, notifyMinutes, userWebhook])
 
   const addTodo = async () => {
     console.log('[DEBUG] addTodo called, currentUser:', currentUser, 'inputValue:', inputValue);
@@ -818,7 +802,6 @@ function App() {
           }
           // 加载通知提前时间
           if (userData.notifyMinutes) {
-            setNotifyMinutes(userData.notifyMinutes)
             localStorage.setItem('notify-minutes', JSON.stringify(userData.notifyMinutes))
           }
         }
@@ -1526,7 +1509,7 @@ function App() {
                       {formatDeadline(todo.deadline).dateStr}
                     </span>
                   )}
-                  {todo.deadline && notifyEnabled && (
+                  {todo.deadline && (
                     <span className="notify-time">
                       （通知时间: {formatTimeDisplay(new Date(new Date(todo.deadline).getTime() - (todo.notifyMinutes ?? notifyMinutes) * 60000).toISOString())}）
                     </span>
