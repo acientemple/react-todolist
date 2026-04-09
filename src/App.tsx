@@ -755,13 +755,21 @@ function App() {
   }
 
   const testNotification = async () => {
+    // 只有设置了 webhook 才能发送测试通知
+    if (!savedWebhook && !userWebhook) {
+      setNotifyStatus('请先设置企业微信 webhook')
+      setTimeout(() => setNotifyStatus(''), 3000)
+      return
+    }
     try {
+      const webhookToUse = savedWebhook || userWebhook
       const response = await fetch('https://react-todolist-rawv.onrender.com/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: '测试消息',
-          deadline: new Date().toLocaleString('zh-CN')
+          deadline: new Date().toLocaleString('zh-CN'),
+          webhook: webhookToUse
         })
       })
       const result = await response.json()
