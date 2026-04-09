@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: react-todolist-server
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.cjs
+    healthCheckPath: /api/health
+    envVars:
+      - key: WECHAT_WEBHOOK_KEY
+        sync: false
