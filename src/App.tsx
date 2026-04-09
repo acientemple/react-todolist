@@ -15,7 +15,9 @@ interface Todo {
   completed: boolean
   deadline?: string
   notified?: boolean
+  notifiedAt?: string
   deletedAt?: number
+  notifyMinutes?: number  // 单独设置的通知提前分钟数，不设置则使用全局默认值
 }
 
 const STORAGE_KEY = 'react-todolist'
@@ -316,6 +318,7 @@ function App() {
   const [inputValue, setInputValue] = useState('')
   const [interimText, setInterimText] = useState('')
   const [deadlineValue, setDeadlineValue] = useState('')
+  const [taskNotifyMinutes, setTaskNotifyMinutes] = useState<number | undefined>(undefined) // 单任务通知提前分钟数
   const [notifyEnabled, setNotifyEnabled] = useState(() => {
     const saved = localStorage.getItem('notify-enabled')
     return saved ? JSON.parse(saved) : true
@@ -654,12 +657,14 @@ function App() {
       id: Date.now(),
       text,
       completed: false,
-      deadline: parsedDeadline || deadlineValue || undefined
+      deadline: parsedDeadline || deadlineValue || undefined,
+      notifyMinutes: taskNotifyMinutes // 使用单任务设置的通知时间，或 undefined（使用全局默认）
     }
     const updatedTodos = [...todos, newTodo]
     setTodos(updatedTodos)
     setInputValue('')
     setDeadlineValue('')
+    setTaskNotifyMinutes(undefined) // 重置单任务通知时间
     if (llmResult) {
       setParsedTime(llmResult)
       setTimeout(() => setParsedTime(''), 3000)
@@ -1260,6 +1265,19 @@ function App() {
               value={deadlineValue}
               onChange={(e) => setDeadlineValue(e.target.value)}
             />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-light)' }}>
+              <span>提前</span>
+              <input
+                type="number"
+                min="0"
+                max="1440"
+                value={taskNotifyMinutes ?? ''}
+                onChange={(e) => setTaskNotifyMinutes(e.target.value ? parseInt(e.target.value) : undefined)}
+                placeholder={notifyMinutes.toString()}
+                style={{ width: 60, padding: '4px 8px', fontSize: 12, border: '1px solid var(--border)', borderRadius: 4 }}
+              />
+              <span>分钟通知（留空使用全局默认值）</span>
+            </div>
           </div>
           {parsedTime && <div className="parsed-time-hint success">{parsedTime}</div>}
           {voiceResult && !parsedTime && <div className="parsed-time-hint">{voiceResult}</div>}
@@ -1514,7 +1532,7 @@ function App() {
                   )}
                   {todo.deadline && notifyEnabled && (
                     <span className="notify-time">
-                      （通知时间: {formatTimeDisplay(new Date(new Date(todo.deadline).getTime() - notifyMinutes * 60000).toISOString())}）
+                      （通知时间: {formatTimeDisplay(new Date(new Date(todo.deadline).getTime() - (todo.notifyMinutes ?? notifyMinutes) * 60000).toISOString())}）
                     </span>
                   )}
                 </div>
