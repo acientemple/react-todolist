@@ -14,16 +14,36 @@ app.use(express.json());
 // 设置时区为中国标准时间 (Asia/Shanghai)
 const TIMEZONE = 'Asia/Shanghai';
 
-// 获取当前服务器时间（中国时区）
+// 获取当前服务器时间的时间戳（服务器运行在 UTC+8/Asia/Shanghai）
 function getNowInTimezone() {
-  const now = new Date();
-  // 转换为中国时区的时间
-  return new Date(now.toLocaleString('en-US', { timeZone: TIMEZONE }));
+  return new Date();
 }
 
-// 获取 UTC 当前时间
-function getNowUTC() {
-  return new Date();
+// 格式化日期显示（使用中国时区）
+function formatDeadline(isoString) {
+  const date = new Date(isoString);
+  const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+
+  // 使用 toLocaleString 转换到中国时区显示
+  const chinaDateStr = date.toLocaleString('zh-CN', { timeZone: TIMEZONE });
+  const parts = chinaDateStr.match(/(\d+)\/(\d+)\/(\d+),?\s+(\d+):(\d+):(\d+)/);
+  if (parts) {
+    const year = parseInt(parts[1]);
+    const month = parseInt(parts[2]);
+    const day = parseInt(parts[3]);
+    const hours = parseInt(parts[4]).toString().padStart(2, '0');
+    const minutes = parseInt(parts[5]).toString().padStart(2, '0');
+    const tempDate = new Date(year, month - 1, day);
+    const weekday = weekdays[tempDate.getDay()];
+    return `${weekday}${month}月${day}日 ${hours}:${minutes}`;
+  }
+
+  const weekday = weekdays[date.getDay()];
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${weekday}${month}月${day}日 ${hours}:${minutes}`;
 }
 
 // Firebase 配置
@@ -86,45 +106,13 @@ function sendWeChatNotification(webhookKey, text, deadline) {
   });
 }
 
-// 格式化日期（使用中国时区显示）
-function formatDeadline(isoString) {
-  const date = new Date(isoString);
-  // 转换为中国时区
-  const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-
-  // 使用 toLocaleString 转换到中国时区
-  const chinaDateStr = date.toLocaleString('zh-CN', { timeZone: TIMEZONE });
-  const parts = chinaDateStr.match(/(\d+)\/(\d+)\/(\d+),?\s+(\d+):(\d+):(\d+)/);
-  if (parts) {
-    const year = parseInt(parts[1]);
-    const month = parseInt(parts[2]);
-    const day = parseInt(parts[3]);
-    const hours = parseInt(parts[4]).toString().padStart(2, '0');
-    const minutes = parseInt(parts[5]).toString().padStart(2, '0');
-    // 获取星期几
-    const tempDate = new Date(year, month - 1, day);
-    const weekday = weekdays[tempDate.getDay()];
-    return `${weekday}${month}月${day}日 ${hours}:${minutes}`;
-  }
-
-  // 后备格式化
-  const weekday = weekdays[date.getDay()];
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  return `${weekday}${month}月${day}日 ${hours}:${minutes}`;
-}
-
-// 获取截止时间在中国时区的时间戳
-// 注意：Firebase 存储的 deadline 是北京时间（如 "2026-04-09T11:30" = 北京11:30）
-// new Date() 会将其解析为 UTC 时间，我们实际要的是北京时间
-// UTC 11:30 = 北京时间 19:30，所以要减去8小时才是正确的北京时间
+// 获取截止时间的时间戳
+// Firebase 存储的 deadline 是北京时间（如 "2026-04-09T23:00" = 北京23:00）
+// new Date() 在服务器（UTC+8/Asia/Shanghai）上解析为本地时间
+// 所以 date.getTime() 已经是我们需要的北京时间时间戳，不需要偏移
 function getDeadlineTimestampInTimezone(isoString) {
   const date = new Date(isoString);
-  const chinaOffset = 8 * 60 * 60 * 1000; // 8小时毫秒数
-  // 减去8小时偏移，将UTC 11:30转换为北京时间 11:30
-  return date.getTime() - chinaOffset;
+  return date.getTime();
 }
 
 // 检查所有用户的待办事项并发送通知
