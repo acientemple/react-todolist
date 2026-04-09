@@ -177,15 +177,17 @@ app.post('/api/notify', async (req, res) => {
   }
 
   let webhookKey;
+  // 尝试作为 URL 解析
   try {
     const url = new URL(webhook);
     webhookKey = url.searchParams.get('key');
-    if (!webhookKey) {
-      res.status(400).json({ success: false, message: '无效的 webhook URL' });
-      return;
-    }
   } catch {
-    res.status(400).json({ success: false, message: '无效的 webhook URL' });
+    // 如果解析失败，可能只是 key 部分
+    webhookKey = webhook;
+  }
+
+  if (!webhookKey || webhookKey.length < 10) {
+    res.status(400).json({ success: false, message: '无效的 webhook，请检查配置' });
     return;
   }
 
