@@ -610,6 +610,7 @@ function App() {
 
       // 如果 AI 返回了多个 deadline，创建多个 todo
       if (result.success && result.deadlines && result.deadlines.length > 0) {
+        console.log('[DEBUG] AI returned deadlines:', JSON.stringify(result.deadlines), 'taskNotifyMinutes:', taskNotifyMinutes);
         const newTodos = result.deadlines.map((item, index) => ({
           id: Date.now() + index,
           text: item.task,
@@ -632,6 +633,7 @@ function App() {
 
       // 单个 deadline 的处理
       if (result.success && result.deadline) {
+        console.log('[DEBUG] AI returned single deadline:', result.deadline, 'taskNotifyMinutes:', taskNotifyMinutes);
         parsedDeadline = result.deadline
         llmResult = 'AI解析'
       }
