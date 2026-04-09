@@ -1354,15 +1354,16 @@ function App() {
                 className="test-btn"
                 onClick={() => {
                   if (webhookSaved) {
-                    setUserWebhook(savedWebhook)
+                    // 点击设置：清空并显示输入框
+                    setUserWebhook('')
                     setWebhookSaved(false)
                   } else {
                     saveWebhook()
                   }
                 }}
-                style={{ background: webhookSaved ? 'var(--danger)' : undefined, color: webhookSaved ? 'white' : undefined }}
+                style={{ background: webhookSaved ? 'var(--primary)' : undefined }}
               >
-                {webhookSaved ? '修改' : '保存'}
+                {webhookSaved ? '设置' : '保存'}
               </button>
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 6 }}>
