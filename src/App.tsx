@@ -662,7 +662,6 @@ function App() {
     setTodos(updatedTodos)
     setInputValue('')
     setDeadlineValue('')
-    setTaskNotifyMinutes(undefined) // 重置单任务通知时间
     if (llmResult) {
       setParsedTime(llmResult)
       setTimeout(() => setParsedTime(''), 3000)
@@ -1535,7 +1534,7 @@ function App() {
                   )}
                   {todo.deadline && notifyEnabled && (
                     <span className="notify-time">
-                      （通知时间: {formatTimeDisplay(new Date(new Date(todo.deadline).getTime() - (todo.notifyMinutes ?? notifyMinutes) * 60000).toISOString())}）
+                      （通知时间: {formatTimeDisplay(new Date(new Date(todo.deadline).getTime() - notifyMinutes * 60000).toISOString())}）
                     </span>
                   )}
                 </div>
