@@ -1301,6 +1301,7 @@ function App() {
           </div>
         )}
 
+        {isLoggedIn && (
         <div className="notification-bar">
           <label className="notify-toggle">
             <input
@@ -1331,6 +1332,7 @@ function App() {
           <button className="test-btn" onClick={testNotification} title="点击发送测试通知到企业微信">测试</button>
           {notifyStatus && <span className="notify-status">{notifyStatus}</span>}
         </div>
+        )}
 
         {/* 企业微信 Webhook 设置 */}
         {isLoggedIn && (
