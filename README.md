@@ -9,11 +9,12 @@
 ## 功能特性
 
 ### 基础功能
-- **用户账户系统** - 注册、登录、忘记密码
+- **用户账户系统** - 注册、登录、修改密码
 - **待办事项管理** - 添加、完成、删除、恢复
 - **语音输入** - 点击麦克风按钮，通过语音添加任务
 - **回收站** - 误删可恢复，支持永久删除
 - **清空已完成** - 一键清除所有已完成任务
+- **跨设备同步** - 所有数据云端存储，换设备登录不丢失
 
 ### 智能时间解析
 - **默认时间解析** - 支持自然语言设置截止时间
@@ -25,11 +26,12 @@
 ### 通知提醒
 - **企业微信通知** - 截止时间前自动发送提醒
 - **可配置提醒时间** - 默认提前 2 小时
+- **每人独立配置** - 每个用户设置自己的 Webhook，互不干扰
 
 ### 云端同步
 - **Firebase 实时数据库** - 所有数据云端存储
-- **跨设备同步** - 登录后自动同步待办事项
-- **配置同步** - AI 设置、Webhook 配置自动同步
+- **数据同步** - 待办事项、回收站、AI 设置、Webhook 配置自动同步
+- **用户数据隔离** - 每个用户只能访问自己的数据
 
 ### 管理员功能
 - **用户管理** - 查看所有用户、设置管理员权限
@@ -59,11 +61,18 @@ npm run dev
 
 访问 http://localhost:5173
 
-### 部署到 GitHub Pages
+### 部署
 
+**前端部署到 GitHub Pages：**
 ```bash
-npm run deploy
+npm run build
+# 然后 GitHub Actions 会自动部署
 ```
+
+**后端通知服务部署到 Render：**
+1. 连接 GitHub 仓库到 Render
+2. Render 会自动检测 `render.yaml` 配置
+3. 部署后设置 `WECHAT_WEBHOOK_KEY` 环境变量（可选）
 
 ---
 
@@ -75,7 +84,7 @@ npm run deploy
    - 点击"注册"标签
    - 输入用户名（至少3位）
    - 输入密码（至少3位）
-   - 输入邮箱（可选，用于找回密码）
+   - 输入邮箱（用于找回密码）
    - 点击"注册"
 
 2. **登录**
@@ -109,12 +118,11 @@ npm run deploy
 
 | 输入示例 | 解析结果 |
 |---------|---------|
-| 今天 | 今天当前时间 |
-| 明天 | 明天同一时间 |
+| 今天下午3点 | 今天下午 15:00 |
+| 明天上午9点 | 明天上午 09:00 |
 | 后天 | 后天同一时间 |
 | 下周三 | 下周三 |
 | 4月10号 | 今年4月10号 |
-| 上午9点 | 当天上午 09:00 |
 | 下午3点半 | 当天下午 15:30 |
 | 7点 | 当天上午 07:00 |
 | 两小时后 | 当前时间 + 2小时 |
@@ -143,7 +151,7 @@ npm run deploy
 1. **获取 Webhook 地址**
    - 打开企业微信群
    - 点击群设置 -> 群机器人 -> 添加机器人
-   - 复制机器人的 Webhook 地址
+   - 复制机器人的 Webhook 地址（完整 URL 或只复制 key 部分）
 
 2. **配置 Webhook**
    - 在设置中输入 Webhook 地址
@@ -157,14 +165,18 @@ npm run deploy
    - 调整"提前 X 小时 Y 分钟"设置
    - 系统会在截止时间前发送通知
 
+**注意**：每个用户需要单独设置自己的 Webhook，数据相互隔离。
+
 ### 完成任务与删除
 
 - **完成任务**：点击任务左侧的复选框
-- **删除任务**：点击任务右侧的"删除"按钮
+- **删除任务**：点击任务右侧的"删除"按钮（移入回收站）
 - **恢复任务**：在回收站中点击"恢复"
 - **永久删除**：在回收站中点击"永久删除"
 - **清空回收站**：点击"清空回收站"按钮
 - **清空已完成**：点击"清空已完成"按钮
+
+**注意**：已过期的任务会显示删除线。
 
 ### 管理员功能
 
@@ -193,11 +205,9 @@ react-todolist/
 │   ├── llm.ts         # AI 大模型集成
 │   ├── main.tsx       # React 入口
 │   └── index.css      # 全局样式
-├── server.cjs         # Express 通知服务（可选）
+├── server.cjs         # Express 通知服务
+├── render.yaml        # Render 部署配置
 ├── .env               # 环境变量（不上传）
-├── .env.example       # 环境变量模板
-├── index.html         # HTML 入口
-├── package.json
 └── vite.config.ts     # Vite 配置
 ```
 
@@ -210,24 +220,23 @@ react-todolist/
 - **构建工具**：Vite
 - **样式**：CSS3（CSS 变量）
 - **语音识别**：Web Speech API
+- **数据库**：Firebase Realtime Database
 
 ### 后端与服务
-- **数据库**：Firebase Realtime Database
-- **通知服务**：企业微信 Webhook（可选）
+- **通知服务**：Express + 企业微信 Webhook
+- **部署**：Render
 - **AI 集成**：支持多种 LLM 提供商
 
 ### AI 支持的模型
 
-| 提供商 | 模型 | 免费额度 |
-|-------|------|---------|
-| DeepSeek | deepseek-chat, deepseek-coder | 有 |
-| ChatGPT (OpenAI) | gpt-4o-mini 等 | 有 |
-| Claude (Anthropic) | claude-3-5-haiku 等 | 有 |
-| Gemini (Google) | gemini-1.5-flash 等 | 有 |
-| MiniMax | MiniMax-M2.7 | 需要申请 |
-| Kimi (Moonshot) | moonshot-v1-8k 等 | 需要申请 |
-| 智谱清言 | glm-4-flash 等 | 有 |
-| 通义千问 | qwen-turbo 等 | 有 |
+| 提供商 | 模型 | 说明 |
+|-------|------|------|
+| DeepSeek | deepseek-chat, deepseek-coder | 推荐使用 |
+| ChatGPT (OpenAI) | gpt-4o-mini 等 | |
+| Claude (Anthropic) | claude-3-5-haiku 等 | |
+| Gemini (Google) | gemini-1.5-flash 等 | |
+| 智谱清言 | glm-4-flash 等 | |
+| 通义千问 | qwen-turbo 等 | |
 
 ---
 
@@ -252,36 +261,29 @@ todolist/
 ├── todos/
 │   └── {username}/
 │       └── [] (待办事项数组)
+├── deletedTodos/
+│   └── {username}/
+│       └── [] (回收站数组)
 ├── verifyCodes/      # 邮箱验证码
 └── resetRequests/    # 密码重置请求
 ```
 
 ---
 
-## 环境变量
+## 版本历史
 
-创建 `.env` 文件：
+### v1.2.0
+- 修复企业微信通知多用户数据隔离问题
+- 优化时间显示为24小时制
+- 已过期任务显示删除线
+- 未登录用户隐藏通知设置
+- 回收站数据同步到云端
+- 完善 Render 部署配置
 
-```bash
-cp .env.example .env
-```
-
-编辑 `.env`：
-
-```env
-# 企业微信 Webhook Key（可选）
-WECHAT_WEBHOOK_KEY=你的企业微信机器人webhook密钥
-```
-
----
-
-## 许可证
-
-MIT License
-
----
-
-## 更新日志
+### v1.1.0
+- 修复 Firebase 同步问题
+- 登出/登录后数据正确保留
+- 回收站同步到 Firebase
 
 ### v1.0.0
 - 待办事项基础功能
@@ -292,3 +294,9 @@ MIT License
 - 管理员功能
 - 语音输入
 - 回收站功能
+
+---
+
+## 许可证
+
+MIT License
