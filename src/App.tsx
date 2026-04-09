@@ -538,13 +538,13 @@ function App() {
   useEffect(() => {
     const checkDeadlines = async () => {
       const now = new Date().getTime()
-      const notifyWindow = notifyMinutes * 60 * 1000
 
       for (const todo of todos) {
         if (!todo.deadline || todo.completed || todo.notified || notifiedIds.current.has(todo.id)) continue
 
         const deadlineTime = new Date(todo.deadline).getTime()
         const timeDiff = deadlineTime - now
+        const notifyWindow = (todo.notifyMinutes ?? notifyMinutes) * 60 * 1000
 
         if (timeDiff > 0 && timeDiff <= notifyWindow) {
           try {
