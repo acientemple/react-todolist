@@ -11,6 +11,21 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
+// 设置时区为中国标准时间 (Asia/Shanghai)
+const TIMEZONE = 'Asia/Shanghai';
+
+// 获取当前服务器时间（中国时区）
+function getNowInTimezone() {
+  const now = new Date();
+  // 转换为中国时区的时间
+  return new Date(now.toLocaleString('en-US', { timeZone: TIMEZONE }));
+}
+
+// 获取 UTC 当前时间
+function getNowUTC() {
+  return new Date();
+}
+
 // Firebase 配置
 const firebaseConfig = {
   projectId: 'snake-game-6e39e',
@@ -71,16 +86,42 @@ function sendWeChatNotification(webhookKey, text, deadline) {
   });
 }
 
-// 格式化日期
+// 格式化日期（使用中国时区显示）
 function formatDeadline(isoString) {
   const date = new Date(isoString);
+  // 转换为中国时区
   const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+
+  // 使用 toLocaleString 转换到中国时区
+  const chinaDateStr = date.toLocaleString('zh-CN', { timeZone: TIMEZONE });
+  const parts = chinaDateStr.match(/(\d+)\/(\d+)\/(\d+),?\s+(\d+):(\d+):(\d+)/);
+  if (parts) {
+    const year = parseInt(parts[1]);
+    const month = parseInt(parts[2]);
+    const day = parseInt(parts[3]);
+    const hours = parseInt(parts[4]).toString().padStart(2, '0');
+    const minutes = parseInt(parts[5]).toString().padStart(2, '0');
+    // 获取星期几
+    const tempDate = new Date(year, month - 1, day);
+    const weekday = weekdays[tempDate.getDay()];
+    return `${weekday}${month}月${day}日 ${hours}:${minutes}`;
+  }
+
+  // 后备格式化
   const weekday = weekdays[date.getDay()];
   const month = date.getMonth() + 1;
   const day = date.getDate();
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
   return `${weekday}${month}月${day}日 ${hours}:${minutes}`;
+}
+
+// 获取截止时间在中国时区的时间戳
+function getDeadlineTimestampInTimezone(isoString) {
+  const date = new Date(isoString);
+  // 转换为中国时区的时间字符串，再转回 Date 对象
+  const chinaDateStr = date.toLocaleString('zh-CN', { timeZone: TIMEZONE });
+  return new Date(chinaDateStr).getTime();
 }
 
 // 检查所有用户的待办事项并发送通知
@@ -98,7 +139,7 @@ async function checkAllDeadlines() {
     }
 
     const allTodos = snapshot.val();
-    const now = Date.now();
+    const now = getNowInTimezone().getTime();  // 使用中国时区的当前时间
     let sentCount = 0;
 
     // 遍历所有用户的待办事项
@@ -133,7 +174,7 @@ async function checkAllDeadlines() {
         const todo = todos[i];
         if (!todo.deadline || todo.completed || todo.notified) continue;
 
-        const deadlineTime = new Date(todo.deadline).getTime();
+        const deadlineTime = getDeadlineTimestampInTimezone(todo.deadline);
         const timeDiff = deadlineTime - now;
 
         // 如果在通知窗口内且未过截止时间
