@@ -17,7 +17,6 @@ interface Todo {
   notified?: boolean
   notifiedAt?: string
   deletedAt?: number
-  notifyMinutes?: number  // 单独设置的通知提前分钟数，不设置则使用全局默认值
 }
 
 const STORAGE_KEY = 'react-todolist'
@@ -318,7 +317,6 @@ function App() {
   const [inputValue, setInputValue] = useState('')
   const [interimText, setInterimText] = useState('')
   const [deadlineValue, setDeadlineValue] = useState('')
-  const [taskNotifyMinutes, setTaskNotifyMinutes] = useState<number | undefined>(undefined) // 单任务通知提前分钟数
   const [notifyEnabled, setNotifyEnabled] = useState(() => {
     const saved = localStorage.getItem('notify-enabled')
     return saved ? JSON.parse(saved) : true
@@ -657,8 +655,7 @@ function App() {
       id: Date.now(),
       text,
       completed: false,
-      deadline: parsedDeadline || deadlineValue || undefined,
-      notifyMinutes: taskNotifyMinutes // 使用单任务设置的通知时间，或 undefined（使用全局默认）
+      deadline: parsedDeadline || deadlineValue || undefined
     }
     const updatedTodos = [...todos, newTodo]
     setTodos(updatedTodos)
@@ -1265,19 +1262,6 @@ function App() {
               value={deadlineValue}
               onChange={(e) => setDeadlineValue(e.target.value)}
             />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-light)' }}>
-              <span>提前</span>
-              <input
-                type="number"
-                min="0"
-                max="1440"
-                value={taskNotifyMinutes ?? ''}
-                onChange={(e) => setTaskNotifyMinutes(e.target.value ? parseInt(e.target.value) : undefined)}
-                placeholder={notifyMinutes.toString()}
-                style={{ width: 60, padding: '4px 8px', fontSize: 12, border: '1px solid var(--border)', borderRadius: 4 }}
-              />
-              <span>分钟通知（留空使用全局默认值）</span>
-            </div>
           </div>
           {parsedTime && <div className="parsed-time-hint success">{parsedTime}</div>}
           {voiceResult && !parsedTime && <div className="parsed-time-hint">{voiceResult}</div>}
@@ -1323,6 +1307,39 @@ function App() {
               </form>
             )}
           </div>
+        )}
+
+        {isLoggedIn && (
+        <div className="notification-bar">
+          <label className="notify-toggle">
+            <input
+              type="checkbox"
+              checked={notifyEnabled}
+              onChange={(e) => setNotifyEnabled(e.target.checked)}
+            />
+            <span>提前</span>
+            <input
+              type="number"
+              className="notify-time-input"
+              value={notifyHours}
+              onChange={(e) => setNotifyMinutes((parseInt(e.target.value) || 0) * 60 + notifyMins)}
+              min="0"
+              max="24"
+            />
+            <span>小时</span>
+            <input
+              type="number"
+              className="notify-time-input"
+              value={notifyMins}
+              onChange={(e) => setNotifyMinutes(notifyHours * 60 + (parseInt(e.target.value) || 0))}
+              min="0"
+              max="59"
+            />
+            <span>分钟发送企业微信通知</span>
+          </label>
+          <button className="test-btn" onClick={testNotification} title="点击发送测试通知到企业微信">测试</button>
+          {notifyStatus && <span className="notify-status">{notifyStatus}</span>}
+        </div>
         )}
 
         {/* 企业微信 Webhook 设置 */}
