@@ -155,6 +155,28 @@ export const FirebaseDB = {
     }
   },
 
+  // 保存用户的回收站 todos
+  async saveDeletedTodos(username: string, deletedTodos: any[]) {
+    const path = TODO_PATH + 'deletedTodos/' + username;
+    try {
+      await set(ref(database, path), deletedTodos);
+    } catch (error) {
+      console.error('[Firebase] 保存回收站失败:', error);
+      throw error;
+    }
+  },
+
+  // 加载用户的回收站 todos
+  async loadDeletedTodos(username: string) {
+    try {
+      const snapshot = await get(ref(database, TODO_PATH + 'deletedTodos/' + username));
+      return snapshot.val() || [];
+    } catch (error) {
+      console.error('[Firebase] 加载回收站失败:', error);
+      return [];
+    }
+  },
+
   // 创建密码重置请求
   async createResetRequest(username: string, email: string) {
     const request: ResetRequest = {

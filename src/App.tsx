@@ -417,7 +417,16 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem(DELETED_KEY, JSON.stringify(deletedTodos))
-  }, [deletedTodos])
+    // 同步到 Firebase
+    if (isLoggingOut || !currentUser) {
+      return
+    }
+    if (deletedTodos.length > 0) {
+      FirebaseDB.saveDeletedTodos(currentUser, deletedTodos).catch(err => {
+        console.error('保存回收站到 Firebase 失败:', err)
+      })
+    }
+  }, [deletedTodos, currentUser, isLoggingOut])
 
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -795,6 +804,9 @@ function App() {
         // 加载用户的 todos
         const userTodos = await FirebaseDB.loadTodos(authUsername)
         setTodos(userTodos || [])
+        // 加载用户的回收站
+        const userDeletedTodos = await FirebaseDB.loadDeletedTodos(authUsername)
+        setDeletedTodos(userDeletedTodos || [])
         setAuthUsername('')
         setAuthPassword('')
       } else {
@@ -864,9 +876,12 @@ function App() {
   const handleLogout = async () => {
     // 标记为登出状态，阻止 useEffect 保存空数据
     setIsLoggingOut(true)
-    // 先保存当前 todos 到服务器
+    // 先保存当前 todos 和回收站到服务器
     if (currentUser && todos.length > 0) {
       await FirebaseDB.saveTodos(currentUser, todos)
+    }
+    if (currentUser && deletedTodos.length > 0) {
+      await FirebaseDB.saveDeletedTodos(currentUser, deletedTodos)
     }
     AuthService.logout()
     setIsLoggedIn(false)
@@ -874,6 +889,7 @@ function App() {
     setCurrentUser(null)
     setUserWebhook('')
     setTodos([])
+    setDeletedTodos([])
     // 清除所有本地缓存
     localStorage.removeItem('react-todos')
     localStorage.removeItem('todo-todos')
