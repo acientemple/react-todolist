@@ -923,7 +923,6 @@ function App() {
     setWebhookSaved(true)
     setSavedWebhook(userWebhook.trim())
     setUserWebhook('') // 清空输入框
-    setTimeout(() => setWebhookSaved(false), 2000)
   }
 
   const handleChangePassword = async (e: React.FormEvent) => {
