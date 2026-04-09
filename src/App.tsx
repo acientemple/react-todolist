@@ -1497,7 +1497,7 @@ function App() {
                   onChange={() => toggleTodo(todo.id)}
                 />
                 <div className="todo-content">
-                  <span className="todo-text">{todo.text}</span>
+                  <span className="todo-text" style={isOverdue && !todo.completed ? { textDecoration: 'line-through', color: 'var(--text-light)' } : undefined}>{todo.text}</span>
                   {todo.deadline && (
                     <span className={'deadline' + (isOverdue ? ' overdue' : '')}>
                       {formatDeadline(todo.deadline).dateStr}
