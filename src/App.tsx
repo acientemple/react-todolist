@@ -614,7 +614,8 @@ function App() {
           id: Date.now() + index,
           text: item.task,
           completed: false,
-          deadline: item.deadline || undefined
+          deadline: item.deadline || undefined,
+          notifyMinutes: taskNotifyMinutes
         }))
         const updatedTodos = [...todos, ...newTodos]
         setTodos(updatedTodos)
