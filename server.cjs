@@ -186,9 +186,11 @@ async function checkAllDeadlines() {
           const result = await sendWeChatNotification(webhookKey, todo.text, deadlineStr);
 
           if (result.success) {
-            // 标记为已通知
+            // 标记为已通知，并记录发送时间（中国时区）
             todos[i].notified = true;
+            todos[i].notifiedAt = getNowInTimezone().toISOString();
             sentCount++;
+            console.log(`[定时任务] 通知已发送: ${todo.text}, 发送时间: ${todos[i].notifiedAt}`);
           }
         }
       }
