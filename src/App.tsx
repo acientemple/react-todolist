@@ -1078,6 +1078,9 @@ function App() {
                   <span className="user-info">
                     {currentUser}{isAdmin && <span className="admin-badge">管理员</span>}
                   </span>
+                  <button className="change-pw-btn" onClick={() => setShowChangePassword(!showChangePassword)}>
+                    {showChangePassword ? '取消' : '修改密码'}
+                  </button>
                   {isAdmin && (
                     <button className="admin-btn" onClick={() => { loadAllUsers(); setShowAdminPanel(!showAdminPanel); }}>
                       {showAdminPanel ? '隐藏管理' : '管理'}
@@ -1313,43 +1316,32 @@ function App() {
         </div>
 
         {/* 用户设置区域 */}
-        {isLoggedIn && (
+        {isLoggedIn && showChangePassword && (
           <div style={{ marginBottom: 16, padding: '12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showChangePassword ? 12 : 0 }}>
-              <span style={{ fontSize: 13, color: 'var(--text-light)' }}>账号设置</span>
-              <button
-                className="test-btn"
-                onClick={() => setShowChangePassword(!showChangePassword)}
-              >
-                {showChangePassword ? '取消' : '修改密码'}
+            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <input
+                type="password"
+                placeholder="原密码"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                style={{ padding: '8px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
+              />
+              <input
+                type="password"
+                placeholder="新密码（至少3位）"
+                value={changeNewPassword}
+                onChange={(e) => setChangeNewPassword(e.target.value)}
+                style={{ padding: '8px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
+              />
+              <button type="submit" className="test-btn" style={{ background: 'var(--primary)', color: 'white' }}>
+                确认修改
               </button>
-            </div>
-            {showChangePassword && (
-              <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <input
-                  type="password"
-                  placeholder="原密码"
-                  value={oldPassword}
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  style={{ padding: '8px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
-                />
-                <input
-                  type="password"
-                  placeholder="新密码（至少3位）"
-                  value={changeNewPassword}
-                  onChange={(e) => setChangeNewPassword(e.target.value)}
-                  style={{ padding: '8px 12px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 6 }}
-                />
-                <button type="submit" className="test-btn" style={{ background: 'var(--primary)', color: 'white' }}>
-                  确认修改
-                </button>
-                {changePasswordMsg && (
-                  <span style={{ fontSize: 12, color: changePasswordMsg.includes('成功') ? 'var(--success)' : 'var(--danger)' }}>
-                    {changePasswordMsg}
-                  </span>
-                )}
-              </form>
-            )}
+              {changePasswordMsg && (
+                <span style={{ fontSize: 12, color: changePasswordMsg.includes('成功') ? 'var(--success)' : 'var(--danger)' }}>
+                  {changePasswordMsg}
+                </span>
+              )}
+            </form>
           </div>
         )}
 
