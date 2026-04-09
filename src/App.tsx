@@ -1354,36 +1354,10 @@ function App() {
         )}
 
         {isLoggedIn && (
-        <div className="notification-bar">
-          <label className="notify-toggle">
-            <input
-              type="checkbox"
-              checked={notifyEnabled}
-              onChange={(e) => setNotifyEnabled(e.target.checked)}
-            />
-            <span>提前</span>
-            <input
-              type="number"
-              className="notify-time-input"
-              value={notifyHours}
-              onChange={(e) => setNotifyMinutes((parseInt(e.target.value) || 0) * 60 + notifyMins)}
-              min="0"
-              max="24"
-            />
-            <span>小时</span>
-            <input
-              type="number"
-              className="notify-time-input"
-              value={notifyMins}
-              onChange={(e) => setNotifyMinutes(notifyHours * 60 + (parseInt(e.target.value) || 0))}
-              min="0"
-              max="59"
-            />
-            <span>分钟发送企业微信通知</span>
-          </label>
-          <button className="test-btn" onClick={testNotification} title="点击发送测试通知到企业微信">测试</button>
-          {notifyStatus && <span className="notify-status">{notifyStatus}</span>}
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button className="test-btn" onClick={testNotification} title="点击发送测试通知到企业微信">测试</button>
+            {notifyStatus && <span className="notify-status">{notifyStatus}</span>}
+          </div>
         )}
 
         {/* 企业微信 Webhook 设置 */}
