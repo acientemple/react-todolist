@@ -1382,8 +1382,8 @@ function App() {
 
         {/* AI 时间解析设置 */}
         {isLoggedIn && (
-          <div className="webhook-section" style={{ marginBottom: 16, padding: '16px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showLLMSettings ? 12 : 0 }}>
+          <div className="webhook-section" style={{ marginBottom: 16, padding: '12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>AI 时间解析</span>
               <button
                 className="test-btn"
